@@ -137,7 +137,7 @@ export const LINE_ITEM_VALIDATION = {
   },
   hsCode: {
     required: false,
-    pattern: /^[0-9]{4,8}$/,
+    pattern: /^[0-9]*$/,  // Allow any number of digits (optional field)
   },
   quantity: {
     required: true,
@@ -165,4 +165,60 @@ export const INVOICE_GRID_SHORTCUTS = {
   deleteRow: 'Alt+D',
   save: 'Ctrl+S',
   cancel: 'Escape',
+} as const;
+
+// ============================================================================
+// PAYMENT CONSTANTS
+// ============================================================================
+
+// Payment Method Options
+export const PAYMENT_METHOD_OPTIONS = [
+  { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
+  { value: 'WIRE_TRANSFER', label: 'Wire Transfer' },
+  { value: 'LC', label: 'Letter of Credit (LC)' },
+  { value: 'ADVANCE', label: 'Advance Payment' },
+  { value: 'CHEQUE', label: 'Cheque' },
+  { value: 'CASH', label: 'Cash' },
+  { value: 'OTHER', label: 'Other' },
+] as const;
+
+// Payment Validation Rules
+export const PAYMENT_VALIDATION = {
+  amountInForeignCurrency: {
+    required: true,
+    min: 0.01,
+    max: 999999999999,
+  },
+  exchangeRate: {
+    required: true,
+    min: 0.0001,
+    max: 999999,
+  },
+  paymentDate: {
+    required: true,
+  },
+  paymentReference: {
+    required: true,
+    minLength: 1,
+    maxLength: 100,
+  },
+  paymentMethod: {
+    required: true,
+  },
+  remarks: {
+    required: false,
+    maxLength: 500,
+  },
+} as const;
+
+// Payment Status Colors (based on invoice status after payment)
+export const PAYMENT_STATUS_STYLES = {
+  PARTIALLY_PAID: {
+    light: 'bg-amber-50 text-amber-700 border-amber-200',
+    dark: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  },
+  SETTLED: {
+    light: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    dark: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  },
 } as const;

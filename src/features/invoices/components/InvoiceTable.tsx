@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil } from 'lucide-react';
+import { Eye, Pencil, Printer } from 'lucide-react';
 import { cn, formatDate, formatCurrency } from '../../../utils/helpers';
 import type { Invoice } from '../types';
 import { InvoiceStatusBadge } from './InvoiceStatusBadge';
 import { canEditInvoice } from '../invoiceUtils';
 import { UserRole } from '../../../types';
+import { downloadInvoicePdf } from '../utils/invoicePdfGenerator';
 
 interface InvoiceTableProps {
   invoices: Invoice[];
@@ -243,7 +244,7 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({
                   <span
                     className={cn(
                       'font-mono text-sm tabular-nums',
-                      invoice.outstandingAmount > 0
+                      (invoice.outstandingAmount ?? 0) > 0
                         ? isDark
                           ? 'text-amber-400'
                           : 'text-amber-600'
@@ -296,6 +297,20 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({
                         <Pencil className="w-4 h-4" />
                       </button>
                     )}
+
+                    {/* Print/Download PDF */}
+                    <button
+                      onClick={() => downloadInvoicePdf({ invoice })}
+                      className={cn(
+                        'p-1.5 rounded-md transition-colors',
+                        isDark
+                          ? 'text-slate-400 hover:text-white hover:bg-slate-700'
+                          : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                      )}
+                      title="Download PDF"
+                    >
+                      <Printer className="w-4 h-4" />
+                    </button>
                   </div>
                 </td>
               </tr>

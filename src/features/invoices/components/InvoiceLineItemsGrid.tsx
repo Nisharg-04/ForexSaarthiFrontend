@@ -114,6 +114,9 @@ export const InvoiceLineItemsGrid: React.FC<InvoiceLineItemsGridProps> = ({
     return calculateLineTotal(qty, price);
   };
 
+  // Grid columns (simplified - no tax columns)
+  const gridCols = 'grid-cols-[1fr_100px_80px_80px_100px_100px_40px]';
+
   const inputBaseClass = cn(
     'w-full px-2 py-1.5 text-sm border-0 bg-transparent transition-colors',
     'focus:outline-none focus:ring-2 focus:ring-inset rounded',
@@ -138,7 +141,8 @@ export const InvoiceLineItemsGrid: React.FC<InvoiceLineItemsGridProps> = ({
       {/* Header */}
       <div
         className={cn(
-          'grid grid-cols-[1fr_100px_80px_80px_100px_100px_40px] text-xs font-medium uppercase tracking-wider',
+          'grid text-xs font-medium uppercase tracking-wider',
+          gridCols,
           isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'
         )}
       >
@@ -146,7 +150,7 @@ export const InvoiceLineItemsGrid: React.FC<InvoiceLineItemsGridProps> = ({
         <div className={cn('px-3 py-2.5', cellClass)}>HS Code</div>
         <div className={cn('px-3 py-2.5 text-right', cellClass)}>Qty</div>
         <div className={cn('px-3 py-2.5', cellClass)}>Unit</div>
-        <div className={cn('px-3 py-2.5 text-right', cellClass)}>Unit Price</div>
+        <div className={cn('px-3 py-2.5 text-right', cellClass)}>Price</div>
         <div className={cn('px-3 py-2.5 text-right', cellClass)}>Total</div>
         <div className="px-2 py-2.5"></div>
       </div>
@@ -164,7 +168,8 @@ export const InvoiceLineItemsGrid: React.FC<InvoiceLineItemsGridProps> = ({
               data-row-id={item.id}
               data-row-index={rowIndex}
               className={cn(
-                'grid grid-cols-[1fr_100px_80px_80px_100px_100px_40px] items-center',
+                'grid items-center',
+                gridCols,
                 hasErrors && (isDark ? 'bg-red-900/10' : 'bg-red-50/50'),
                 isDark ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50/50'
               )}
@@ -187,10 +192,11 @@ export const InvoiceLineItemsGrid: React.FC<InvoiceLineItemsGridProps> = ({
                       aria-invalid={!!errors.description}
                     />
                     {errors.description && (
-                      <AlertCircle
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500"
-                        title={errors.description}
-                      />
+                      <span title={errors.description}>
+                        <AlertCircle
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500"
+                        />
+                      </span>
                     )}
                   </>
                 )}

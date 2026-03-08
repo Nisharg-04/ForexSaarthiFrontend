@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, RefreshCw, Filter, Search } from 'lucide-react';
+import { Plus, RefreshCw, Search, Filter } from 'lucide-react';
 import { useAuth, useAppSelector } from '../../../hooks/useRedux';
 import { useActionBar, type ActionItem } from '../../../components/ui/BottomActionBar';
 import { cn } from '../../../utils/helpers';
 import { useGetInvoicesQuery } from '../api/invoiceApi';
-import type { Invoice, InvoiceFilters, InvoiceStatus } from '../types';
+import type { Invoice, InvoiceStatus } from '../types';
 import { InvoiceTable } from '../components/InvoiceTable';
-import { canCreateInvoice, filterInvoicesBySearch } from '../invoiceUtils';
+import { canCreateInvoice, filterInvoicesBySearch, filterInvoicesByStatus } from '../invoiceUtils';
 import { INVOICE_STATUS_TABS, INVOICE_STATUS_STYLES } from '../invoiceConstants';
 
 export const InvoiceListPage: React.FC = () => {
@@ -21,22 +21,19 @@ export const InvoiceListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeStatus, setActiveStatus] = useState<InvoiceStatus | undefined>(undefined);
 
-  // Build filters - memoized to prevent unnecessary API calls
-  const filters: InvoiceFilters | undefined = useMemo(() => {
-    const filterObj: InvoiceFilters = {};
-    if (activeStatus) filterObj.status = activeStatus;
-    return Object.keys(filterObj).length > 0 ? filterObj : undefined;
-  }, [activeStatus]);
+  // API Hooks - Fetch ALL invoices (no server-side filters)
+  // We apply filters client-side so tab counts remain accurate
+  const { data, isLoading, isFetching, refetch } = useGetInvoicesQuery(undefined);
 
-  // API Hooks
-  const { data, isLoading, isFetching, refetch } = useGetInvoicesQuery(filters);
+  // All invoices for counting
+  const allInvoices = data?.data || [];
 
-  const invoices = data?.data || [];
-
-  // Apply client-side search filter
+  // Apply client-side filters (status, search)
   const filteredInvoices = useMemo(() => {
-    return filterInvoicesBySearch(invoices, searchTerm);
-  }, [invoices, searchTerm]);
+    let result = filterInvoicesByStatus(allInvoices, activeStatus);
+    result = filterInvoicesBySearch(result, searchTerm);
+    return result;
+  }, [allInvoices, activeStatus, searchTerm]);
 
   // Permission checks
   const canCreate = canCreateInvoice(role);
@@ -83,16 +80,14 @@ export const InvoiceListPage: React.FC = () => {
     return () => clearActions();
   }, [canCreate, isFetching, setActions, clearActions, navigate, refetch]);
 
-  // Get count for each status
-  const getStatusCounts = useCallback(() => {
-    const counts: Record<string, number> = { all: invoices.length };
-    invoices.forEach((invoice) => {
+  // Get count for each status from ALL invoices (not filtered)
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: allInvoices.length };
+    allInvoices.forEach((invoice) => {
       counts[invoice.status] = (counts[invoice.status] || 0) + 1;
     });
     return counts;
-  }, [invoices]);
-
-  const statusCounts = getStatusCounts();
+  }, [allInvoices]);
 
   return (
     <div className="space-y-4">
@@ -277,7 +272,7 @@ export const InvoiceListPage: React.FC = () => {
           )}
         >
           <span>
-            Showing {filteredInvoices.length} of {invoices.length} invoices
+            Showing {filteredInvoices.length} of {allInvoices.length} invoices
           </span>
           <span className={cn('font-mono', isDark ? 'text-slate-300' : 'text-slate-700')}>
             Total Outstanding:{' '}

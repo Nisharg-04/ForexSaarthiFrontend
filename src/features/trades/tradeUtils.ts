@@ -67,12 +67,12 @@ export const canCancelTrade = (role: UserRole | undefined | null, trade?: Trade 
 /**
  * Check if user can close a trade
  * - Must have create permission
- * - Trade must be in APPROVED stage
+ * - Trade must be in APPROVED or ACTIVE stage
  */
 export const canCloseTrade = (role: UserRole | undefined | null, trade?: Trade | null): boolean => {
   if (!canCreateTrade(role)) return false;
   if (!trade) return false;
-  return trade.tradeStage === TradeStageEnum.APPROVED;
+  return trade.tradeStage === TradeStageEnum.APPROVED || trade.tradeStage === TradeStageEnum.ACTIVE;
 };
 
 /**
@@ -91,6 +91,23 @@ export const isTradeTerminal = (trade?: Trade | null): boolean => {
   return trade.tradeStage === TradeStageEnum.CANCELLED || trade.tradeStage === TradeStageEnum.CLOSED;
 };
 
+/**
+ * Check if trade is active (has invoices)
+ */
+export const isTradeActive = (trade?: Trade | null): boolean => {
+  if (!trade) return false;
+  return trade.tradeStage === TradeStageEnum.ACTIVE;
+};
+
+/**
+ * Check if invoices can be added to this trade
+ * - Trade must be APPROVED or ACTIVE
+ */
+export const canAddInvoiceToTrade = (trade?: Trade | null): boolean => {
+  if (!trade) return false;
+  return trade.tradeStage === TradeStageEnum.APPROVED || trade.tradeStage === TradeStageEnum.ACTIVE;
+};
+
 // ============================================================================
 // STAGE HELPERS
 // ============================================================================
@@ -105,7 +122,9 @@ export const getNextStages = (currentStage: TradeStage): TradeStage[] => {
     case TradeStageEnum.SUBMITTED:
       return [TradeStageEnum.APPROVED, TradeStageEnum.CANCELLED];
     case TradeStageEnum.APPROVED:
-      return [TradeStageEnum.CLOSED];
+      return [TradeStageEnum.ACTIVE, TradeStageEnum.CLOSED]; // ACTIVE when invoice is added
+    case TradeStageEnum.ACTIVE:
+      return [TradeStageEnum.CLOSED]; // Can only close an active trade
     case TradeStageEnum.CANCELLED:
     case TradeStageEnum.CLOSED:
       return []; // Terminal states
@@ -123,8 +142,9 @@ export const getStageOrder = (stage: TradeStage | 'CREATED'): number => {
     DRAFT: 1,
     SUBMITTED: 2,
     APPROVED: 3,
+    ACTIVE: 4,
     CANCELLED: 3, // Same level as APPROVED (alternative path)
-    CLOSED: 4,
+    CLOSED: 5,
   };
   return order[stage] ?? 0;
 };
@@ -245,6 +265,16 @@ export const buildTradeTimeline = (trade: Trade): TradeTimelineEvent[] => {
     });
   }
 
+  // Active event (when first invoice is added)
+  if (trade.activatedAt) {
+    events.push({
+      stage: TradeStageEnum.ACTIVE,
+      label: 'First Invoice Added',
+      timestamp: trade.activatedAt,
+      isCurrent: trade.tradeStage === TradeStageEnum.ACTIVE,
+    });
+  }
+
   // Cancelled event
   if (trade.cancelledAt) {
     events.push({
@@ -252,7 +282,7 @@ export const buildTradeTimeline = (trade: Trade): TradeTimelineEvent[] => {
       label: 'Cancelled',
       timestamp: trade.cancelledAt,
       userName: trade.cancelledByName,
-      details: trade.cancelReason,
+      details: trade.Reason,
       isCurrent: trade.tradeStage === TradeStageEnum.CANCELLED,
     });
   }
@@ -301,6 +331,14 @@ export const filterTradeByTradeType = (trades: Trade[], tradeType: Trade['tradeT
   return trades.filter((trade) => trade.tradeType === tradeType);
 }
 
+/**
+ * Filter trades by stage (client-side)
+ */
+export const filterTradesByStage = (trades: Trade[], stage: TradeStage | undefined): Trade[] => {
+  if (!stage) return trades;
+  return trades.filter((trade) => trade.tradeStage === stage);
+}
+
 // ============================================================================
 // DISPLAY HELPERS
 // ============================================================================
@@ -313,6 +351,7 @@ export const getStageLabel = (stage: TradeStage): string => {
     DRAFT: 'Draft',
     SUBMITTED: 'Submitted',
     APPROVED: 'Approved',
+    ACTIVE: 'Active',
     CANCELLED: 'Cancelled',
     CLOSED: 'Closed',
   };

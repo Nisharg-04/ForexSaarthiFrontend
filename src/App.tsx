@@ -14,7 +14,10 @@ import { EditCompanyPage } from './features/company';
 import { CompanyUsersPage } from './features/companyUsers';
 import { PartyPage } from './features/parties';
 import { TradeListPage, CreateTradePage, TradeDetailsPage, EditTradePage } from './features/trades';
-import { InvoicesPage, ExposurePage, PaymentsPage, SettingsPage } from './pages/DashboardPlaceholders';
+import { InvoiceListPage, InvoiceCreatePage, InvoiceDetailPage, InvoiceEditPage } from './features/invoices';
+import { ForexDashboardPage, ForexUsagePage } from './features/forex';
+import { ExposureDashboard, ExposureListPage, ExposureDetailPage, HedgeManagementPage, QuarterlyReportView } from './features/exposure';
+import { PaymentsPage, SettingsPage } from './pages/DashboardPlaceholders';
 import { ActionBarProvider } from './components/ui/BottomActionBar';
 
 function App() {
@@ -82,11 +85,27 @@ function App() {
             <Route path="trades/create" element={<CreateTradePage />} />
             <Route path="trades/:id" element={<TradeDetailsPage />} />
             <Route path="trades/:id/edit" element={<EditTradePage />} />
-            <Route path="invoices" element={<InvoicesPage />} />
-            <Route path="exposure" element={<ExposurePage />} />
+            <Route path="invoices" element={<InvoiceListPage />} />
+            <Route path="invoices/new" element={<InvoiceCreatePage />} />
+            <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+            <Route path="invoices/:id/edit" element={<InvoiceEditPage />} />
+            
+            {/* Exposure Module - Treasury & Risk Management */}
+            <Route path="exposures" element={<ExposureDashboard />} />
+            <Route path="exposures/list" element={<ExposureListPage />} />
+            <Route path="exposures/hedges" element={<HedgeManagementPage />} />
+            <Route path="exposures/quarterly-report" element={<QuarterlyReportView />} />
+            <Route path="exposures/:id" element={<ExposureDetailPage />} />
+            {/* Legacy route redirect */}
+            <Route path="exposure" element={<Navigate to="/dashboard/exposures" replace />} />
+            
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="parties" element={<PartyPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            
+            {/* Forex Module - Read-only market data */}
+            <Route path="forex" element={<ForexDashboardPage />} />
+            <Route path="forex/usage" element={<ForexUsagePage />} />
             
             {/* Company Management (Admin only - enforced in components) */}
             <Route path="company/edit" element={<EditCompanyPage />} />

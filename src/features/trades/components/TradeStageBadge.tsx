@@ -18,6 +18,8 @@ export const TradeStageBadge: React.FC<TradeStageBadgeProps> = ({
   showIcon = false,
 }) => {
   const styles = TRADE_STAGE_STYLES[stage];
+  // console.log(TRADE_STAGE_STYLES);
+  // console.log(stage)
   const colorClasses = isDark ? styles.dark : styles.light;
 
   const sizeClasses = {

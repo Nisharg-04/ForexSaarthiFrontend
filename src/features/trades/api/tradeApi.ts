@@ -16,6 +16,9 @@ const buildQueryString = (filters?: TradeFilters): string => {
   const params = new URLSearchParams();
   
   if (filters.stage) params.append('stage', filters.stage);
+  if (filters.stages && filters.stages.length > 0) {
+    filters.stages.forEach((stage) => params.append('stages', stage));
+  }
   if (filters.tradeType) params.append('tradeType', filters.tradeType);
   if (filters.partyId) params.append('partyId', filters.partyId);
   if (filters.search) params.append('search', filters.search);
@@ -95,10 +98,10 @@ export const tradeApi = apiSlice.injectEndpoints({
 
     // Cancel trade (DRAFT/SUBMITTED → CANCELLED)
     cancelTrade: builder.mutation<TradeResponse, CancelTradeRequest>({
-      query: ({ id, cancelReason }) => ({
+      query: ({ id, reason   }) => ({
         url: `/trades/${id}/cancel`,
         method: 'POST',
-        body: { cancelReason },
+        body: { reason },
       }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Trade', id },

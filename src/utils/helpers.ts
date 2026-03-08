@@ -21,10 +21,13 @@ export const formatApiDate = (date: Date): string => {
 
 // Currency Formatting
 export const formatCurrency = (
-  amount: number,
+  amount: number | null | undefined,
   currency: string = 'INR',
   showSymbol: boolean = true
 ): string => {
+  // Handle null, undefined, NaN
+  const safeAmount = (amount == null || isNaN(amount)) ? 0 : amount;
+  
   const formatter = new Intl.NumberFormat('en-IN', {
     style: showSymbol ? 'currency' : 'decimal',
     currency: currency,
@@ -32,14 +35,17 @@ export const formatCurrency = (
     maximumFractionDigits: 2,
   });
 
-  return formatter.format(amount);
+  return formatter.format(safeAmount);
 };
 
-export const formatNumber = (num: number, decimals: number = 2): string => {
+export const formatNumber = (num: number | null | undefined, decimals: number = 2): string => {
+  // Handle null, undefined, NaN
+  const safeNum = (num == null || isNaN(num)) ? 0 : num;
+  
   return new Intl.NumberFormat('en-IN', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(num);
+  }).format(safeNum);
 };
 
 // Percentage Formatting

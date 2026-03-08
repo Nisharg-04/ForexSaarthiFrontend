@@ -17,6 +17,7 @@ import { TradeTimeline } from '../components/TradeTimeline';
 import { TradeActions } from '../components/TradeActions';
 import { TradeForm } from '../components/TradeForm';
 import { CancelTradeModal } from '../components/CancelTradeModal';
+import { TradeInvoicesSection } from '../components/TradeInvoicesSection';
 import type { TradeFormData } from '../types';
 import { useUpdateTradeMutation } from '../api/tradeApi';
 import { canEditTrade } from '../tradeUtils';
@@ -110,13 +111,13 @@ export const TradeDetailsPage: React.FC = () => {
   }, []);
 
   const handleConfirmCancel = useCallback(
-    async (cancelReason: string) => {
+    async (reason: string) => {
       if (!trade) return;
 
       try {
         await cancelTrade({
           id: trade.id,
-          cancelReason,
+          reason,
         }).unwrap();
         setIsCancelModalOpen(false);
       } catch (error) {
@@ -207,6 +208,13 @@ export const TradeDetailsPage: React.FC = () => {
         {/* Left Column - Info & Actions */}
         <div className="lg:col-span-2 space-y-6">
           <TradeInfoCard trade={trade} isDark={isDark} />
+          <TradeInvoicesSection
+            tradeId={trade.id}
+            tradeNumber={trade.tradeNumber}
+            tradeStage={trade.tradeStage}
+            isDark={isDark}
+            userRole={role}
+          />
           <TradeActions
             trade={trade}
             userRole={role}

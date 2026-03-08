@@ -11,6 +11,7 @@ export const TRADE_STAGE_OPTIONS = [
   { value: TradeStage.DRAFT, label: 'Draft' },
   { value: TradeStage.SUBMITTED, label: 'Submitted' },
   { value: TradeStage.APPROVED, label: 'Approved' },
+  { value: TradeStage.ACTIVE, label: 'Active' },
   { value: TradeStage.CANCELLED, label: 'Cancelled' },
   { value: TradeStage.CLOSED, label: 'Closed' },
 ] as const;
@@ -21,6 +22,7 @@ export const TRADE_STAGE_TABS = [
   { value: TradeStage.DRAFT, label: 'Draft' },
   { value: TradeStage.SUBMITTED, label: 'Submitted' },
   { value: TradeStage.APPROVED, label: 'Approved' },
+  { value: TradeStage.ACTIVE, label: 'Active' },
   { value: TradeStage.CLOSED, label: 'Closed' },
   { value: TradeStage.CANCELLED, label: 'Cancelled' },
 ] as const;
@@ -44,6 +46,12 @@ export const TRADE_STAGE_STYLES = {
     dark: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     icon: '✅',
     description: 'Trade has been approved',
+  },
+  [TradeStage.ACTIVE]: {
+    light: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+    dark: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    icon: '🚀',
+    description: 'Trade is active with invoices',
   },
   [TradeStage.CANCELLED]: {
     light: 'bg-red-50 text-red-700 border-red-200',

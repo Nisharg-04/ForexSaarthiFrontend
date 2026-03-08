@@ -4,7 +4,8 @@ import { useAuth, useAppSelector } from '../../../hooks/useRedux';
 import { cn, formatApiDate } from '../../../utils/helpers';
 import { useCreateInvoiceMutation } from '../api/invoiceApi';
 import { useGetTradeQuery } from '../../trades/api/tradeApi';
-import type { TradeForSelection, LineItemFormData, InvoiceFormData, InvoiceFormErrors } from '../types';
+import { useGetPartyQuery } from '../../parties/api/partyApi';
+import type { TradeForSelection, LineItemFormData, InvoiceFormData, InvoiceFormErrors, InputMode } from '../types';
 import { InvoiceHeader } from '../components/InvoiceHeader';
 import { InvoiceLineItemsGrid } from '../components/InvoiceLineItemsGrid';
 import { InvoiceTotalsPanel } from '../components/InvoiceTotalsPanel';
@@ -15,6 +16,8 @@ import {
   validateInvoiceForm,
   convertLineItemsForApi,
   canCreateInvoice,
+  parseNumericInput,
+  calculateInvoiceTotals,
 } from '../invoiceUtils';
 
 export const InvoiceCreatePage: React.FC = () => {
@@ -36,6 +39,12 @@ export const InvoiceCreatePage: React.FC = () => {
     tradeId: tradeIdFromUrl || '',
     invoiceDate: formatApiDate(new Date()),
     dueDate: '',
+    taxMode: 'percent',
+    taxPercent: '0',
+    taxAmount: '0',
+    discountMode: 'percent',
+    discountPercent: '0',
+    discountAmount: '0',
     lineItems: [createEmptyLineItem()],
   });
   const [errors, setErrors] = useState<InvoiceFormErrors>({});
@@ -48,6 +57,14 @@ export const InvoiceCreatePage: React.FC = () => {
   const { data: tradeData } = useGetTradeQuery(tradeIdFromUrl || '', {
     skip: !tradeIdFromUrl,
   });
+
+  // Fetch party details to get currency
+  const { data: partyData } = useGetPartyQuery(selectedTrade?.partyId || '', {
+    skip: !selectedTrade?.partyId,
+  });
+
+  // Get currency from party
+  const currency = partyData?.data?.currency || 'USD';
 
   // Set trade from URL on mount
   useEffect(() => {
@@ -64,6 +81,7 @@ export const InvoiceCreatePage: React.FC = () => {
       setFormData((prev) => ({ ...prev, tradeId: trade.id }));
     }
   }, [tradeData, tradeIdFromUrl]);
+
 
   // Calculate default due date (30 days from invoice date)
   useEffect(() => {
@@ -96,6 +114,50 @@ export const InvoiceCreatePage: React.FC = () => {
     setErrors((prev) => ({ ...prev, lineItems: undefined }));
   }, []);
 
+  // Tax handlers
+  const handleTaxModeChange = useCallback((mode: InputMode) => {
+    setFormData((prev) => ({ ...prev, taxMode: mode }));
+    setIsDirty(true);
+  }, []);
+
+  const handleTaxPercentChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, taxPercent: value }));
+    setIsDirty(true);
+  }, []);
+
+  const handleTaxAmountChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, taxAmount: value }));
+    setIsDirty(true);
+  }, []);
+
+  // Discount handlers
+  const handleDiscountModeChange = useCallback((mode: InputMode) => {
+    setFormData((prev) => ({ ...prev, discountMode: mode }));
+    setIsDirty(true);
+  }, []);
+
+  const handleDiscountPercentChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, discountPercent: value }));
+    setIsDirty(true);
+  }, []);
+
+  const handleDiscountAmountChange = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, discountAmount: value }));
+    setIsDirty(true);
+  }, []);
+
+  // Calculate totals for API submission
+  const calculatedTotals = useMemo(() => {
+    return calculateInvoiceTotals(formData.lineItems, {
+      taxMode: formData.taxMode,
+      taxPercent: parseNumericInput(formData.taxPercent),
+      taxAmount: parseNumericInput(formData.taxAmount),
+      discountMode: formData.discountMode,
+      discountPercent: parseNumericInput(formData.discountPercent),
+      discountAmount: parseNumericInput(formData.discountAmount),
+    });
+  }, [formData]);
+
   const handleSave = useCallback(async () => {
     // Validate form
     const validationErrors = validateInvoiceForm(formData);
@@ -109,6 +171,12 @@ export const InvoiceCreatePage: React.FC = () => {
         tradeId: formData.tradeId,
         invoiceDate: formData.invoiceDate,
         dueDate: formData.dueDate,
+        currency,
+        taxPercent: calculatedTotals.taxPercent,
+        taxAmount: calculatedTotals.taxAmount,
+        discountPercent: calculatedTotals.discountPercent,
+        discountAmount: calculatedTotals.discountAmount,
+        invoiceAmount: calculatedTotals.invoiceAmount,
         lineItems: convertLineItemsForApi(formData.lineItems),
       }).unwrap();
 
@@ -118,7 +186,7 @@ export const InvoiceCreatePage: React.FC = () => {
       console.error('Failed to create invoice:', error);
       setErrors({ general: 'Failed to create invoice. Please try again.' });
     }
-  }, [formData, createInvoice, navigate]);
+  }, [formData, currency, calculatedTotals, createInvoice, navigate]);
 
   const handleDiscard = useCallback(() => {
     if (isDirty) {
@@ -138,9 +206,6 @@ export const InvoiceCreatePage: React.FC = () => {
       formData.lineItems.some((item) => item.description.trim())
     );
   }, [formData]);
-
-  // Currency from trade (would normally come from party/trade)
-  const currency = 'USD'; // TODO: Get from trade/party
 
   // Redirect if no permission
   if (!canCreate) {
@@ -223,7 +288,7 @@ export const InvoiceCreatePage: React.FC = () => {
             Select a Trade
           </h3>
           <p className={cn('text-sm mb-4', isDark ? 'text-slate-400' : 'text-slate-500')}>
-            Choose an approved trade to create an invoice
+            Choose an approved or active trade to create an invoice
           </p>
           <button
             onClick={() => setIsDrawerOpen(true)}
@@ -239,29 +304,46 @@ export const InvoiceCreatePage: React.FC = () => {
 
       {/* Main Content (when trade is selected) */}
       {selectedTrade && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          {/* Line Items Grid - 3 columns */}
-          <div className="lg:col-span-3">
-            <InvoiceLineItemsGrid
-              lineItems={formData.lineItems}
-              onChange={handleLineItemsChange}
-              isDark={isDark}
-              currency={currency}
-            />
-            {errors.lineItems && (
-              <p className="mt-2 text-sm text-red-500">{errors.lineItems}</p>
-            )}
-          </div>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* Line Items Grid - 3 columns */}
+            <div className="lg:col-span-3">
+              <InvoiceLineItemsGrid
+                lineItems={formData.lineItems}
+                onChange={handleLineItemsChange}
+                isDark={isDark}
+                currency={currency}
+              />
+              {errors.lineItems && (
+                <p className="mt-2 text-sm text-red-500">{errors.lineItems}</p>
+              )}
+            </div>
 
-          {/* Totals Panel - 1 column */}
-          <div className="lg:col-span-1">
-            <InvoiceTotalsPanel
-              lineItems={formData.lineItems}
-              currency={currency}
-              isDark={isDark}
-            />
+            {/* Totals Panel - 1 column */}
+            <div className="lg:col-span-1">
+              <InvoiceTotalsPanel
+                lineItems={formData.lineItems}
+                currency={currency}
+                // Tax props
+                taxMode={formData.taxMode}
+                taxPercent={parseNumericInput(formData.taxPercent)}
+                taxAmount={parseNumericInput(formData.taxAmount)}
+                onTaxModeChange={handleTaxModeChange}
+                onTaxPercentChange={handleTaxPercentChange}
+                onTaxAmountChange={handleTaxAmountChange}
+                // Discount props
+                discountMode={formData.discountMode}
+                discountPercent={parseNumericInput(formData.discountPercent)}
+                discountAmount={parseNumericInput(formData.discountAmount)}
+                onDiscountModeChange={handleDiscountModeChange}
+                onDiscountPercentChange={handleDiscountPercentChange}
+                onDiscountAmountChange={handleDiscountAmountChange}
+                isDark={isDark}
+                isEditable={true}
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Actions Bar */}
@@ -271,7 +353,7 @@ export const InvoiceCreatePage: React.FC = () => {
           isDark={isDark}
           isNew={true}
           isDirty={isDirty}
-          isValid={isValid}
+          isValid={!!isValid}
           isSaving={isCreating}
           onSave={handleSave}
           onDiscard={handleDiscard}

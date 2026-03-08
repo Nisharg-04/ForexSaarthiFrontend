@@ -38,7 +38,7 @@ export const InvoiceActionsBar: React.FC<InvoiceActionsBarProps> = ({
 }) => {
   const [showIssueConfirm, setShowIssueConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
+  const [reason, setReason] = useState('');
   const [cancelError, setCancelError] = useState<string | null>(null);
 
   const canIssue = canIssueInvoice(userRole, invoice);
@@ -56,22 +56,22 @@ export const InvoiceActionsBar: React.FC<InvoiceActionsBarProps> = ({
 
   const handleCancelClick = () => {
     setShowCancelConfirm(true);
-    setCancelReason('');
+    setReason('');
     setCancelError(null);
   };
 
   const handleCancelConfirm = () => {
-    const error = validateCancelReason(cancelReason);
+    const error = validateCancelReason(reason);
     if (error) {
       setCancelError(error);
       return;
     }
     setShowCancelConfirm(false);
-    onCancel?.(cancelReason);
+    onCancel?.(reason);
   };
 
   return (
-    <>
+    <>  
       {/* Actions Bar */}
       <div
         className={cn(
@@ -296,9 +296,9 @@ export const InvoiceActionsBar: React.FC<InvoiceActionsBarProps> = ({
                       Reason for cancellation <span className="text-red-500">*</span>
                     </label>
                     <textarea
-                      value={cancelReason}
+                      value={reason}
                       onChange={(e) => {
-                        setCancelReason(e.target.value);
+                        setReason(e.target.value);
                         setCancelError(null);
                       }}
                       rows={3}
@@ -340,7 +340,7 @@ export const InvoiceActionsBar: React.FC<InvoiceActionsBarProps> = ({
               <button
                 type="button"
                 onClick={handleCancelConfirm}
-                disabled={!cancelReason.trim()}
+                disabled={!reason.trim()}
                 className={cn(
                   'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                   'disabled:opacity-50 disabled:cursor-not-allowed',

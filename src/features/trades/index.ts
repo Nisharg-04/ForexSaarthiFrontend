@@ -76,6 +76,7 @@ export {
   validateCancelReason,
   buildTradeTimeline,
   filterTradesBySearch,
+  filterTradesByStage,
   getStageLabel,
   getTradeTypeLabel,
   formatTradeNumber,

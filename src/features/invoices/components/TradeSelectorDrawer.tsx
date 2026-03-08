@@ -21,9 +21,9 @@ export const TradeSelectorDrawer: React.FC<TradeSelectorDrawerProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'ALL' | 'EXPORT' | 'IMPORT'>('ALL');
 
-  // Fetch only APPROVED trades (active trades that can have invoices)
+  // Fetch APPROVED and ACTIVE trades (trades that can have invoices)
   const { data, isLoading } = useGetTradesQuery(
-    { stage: TradeStage.APPROVED },
+    { stages: [TradeStage.APPROVED, TradeStage.ACTIVE] },
     { skip: !isOpen }
   );
 
@@ -114,7 +114,7 @@ export const TradeSelectorDrawer: React.FC<TradeSelectorDrawerProps> = ({
               Select Trade
             </h2>
             <p className={cn('text-sm mt-0.5', isDark ? 'text-slate-400' : 'text-slate-500')}>
-              Choose an approved trade to create invoice
+              Choose an approved or active trade to create invoice
             </p>
           </div>
           <button
@@ -207,10 +207,10 @@ export const TradeSelectorDrawer: React.FC<TradeSelectorDrawerProps> = ({
               <p className={cn('text-sm', isDark ? 'text-slate-400' : 'text-slate-500')}>
                 {searchTerm
                   ? 'No trades match your search'
-                  : 'No approved trades available'}
+                  : 'No approved or active trades available'}
               </p>
               <p className={cn('text-xs mt-1', isDark ? 'text-slate-500' : 'text-slate-400')}>
-                Only approved trades can have invoices
+                Only approved or active trades can have invoices
               </p>
             </div>
           ) : (
@@ -297,7 +297,7 @@ export const TradeSelectorDrawer: React.FC<TradeSelectorDrawerProps> = ({
           )}
         >
           <p className={cn('text-xs', isDark ? 'text-slate-500' : 'text-slate-400')}>
-            Showing {filteredTrades.length} of {trades.length} approved trades
+            Showing {filteredTrades.length} of {trades.length} eligible trades
           </p>
         </div>
       </div>

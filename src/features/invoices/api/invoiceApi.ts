@@ -101,10 +101,10 @@ export const invoiceApi = apiSlice.injectEndpoints({
 
     // Cancel invoice (DRAFT → CANCELLED) - Admin only
     cancelInvoice: builder.mutation<InvoiceResponse, CancelInvoiceRequest>({
-      query: ({ id, cancelReason }) => ({
+      query: ({ id, Reason }) => ({
         url: `/invoices/${id}/cancel`,
         method: 'POST',
-        body: { cancelReason },
+        body: { Reason },
       }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Invoice', id },

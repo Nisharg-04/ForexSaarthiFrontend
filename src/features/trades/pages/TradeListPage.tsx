@@ -5,11 +5,11 @@ import { useAuth, useAppSelector } from '../../../hooks/useRedux';
 import { useActionBar, type ActionItem } from '../../../components/ui/BottomActionBar';
 import { cn } from '../../../utils/helpers';
 import { useGetTradesQuery, useCancelTradeMutation } from '../api/tradeApi';
-import type { Trade, TradeFilters, TradeStage, TradeType } from '../types';
+import type { Trade, TradeStage, TradeType } from '../types';
 import { TradeType as TradeTypeEnum } from '../types';
 import { TradeTable } from '../components/TradeTable';
 import { CancelTradeModal } from '../components/CancelTradeModal';
-import { canCreateTrade, filterTradeByTradeType, filterTradesBySearch } from '../tradeUtils';
+import { canCreateTrade, filterTradeByTradeType, filterTradesBySearch, filterTradesByStage } from '../tradeUtils';
 import { TRADE_STAGE_TABS, TRADE_STAGE_STYLES } from '../tradeConstants';
 
 // Financial Year Helper
@@ -56,24 +56,24 @@ export const TradeListPage: React.FC = () => {
 
   const financialYears = useMemo(() => getFinancialYears(), []);
 
-  // Build filters - memoized to prevent unnecessary API calls
-  const filters: TradeFilters | undefined = useMemo(() => {
-    const filterObj: TradeFilters = {};
-    if (activeStage) filterObj.stage = activeStage;
-    if (activeTradeType) filterObj.tradeType = activeTradeType;
-    return Object.keys(filterObj).length > 0 ? filterObj : undefined;
-  }, [activeStage, activeTradeType]);
-
-  // API Hooks
-  const { data, isLoading, isFetching, refetch } = useGetTradesQuery(filters);
+  // API Hooks - Fetch ALL trades (no server-side filters)
+  // We apply filters client-side so tab counts remain accurate
+  const { data, isLoading, isFetching, refetch } = useGetTradesQuery(undefined);
   const [cancelTrade, { isLoading: isCancelling }] = useCancelTradeMutation();
 
-  const trades = data?.data || [];
-  console.log(trades)
+  // All trades for counting
+  const allTrades = data?.data || [];
   
-  // Apply client-side filters (search + financial year)
+  // Apply client-side filters (stage, type, search, financial year)
   const filteredTrades = useMemo(() => {
-    let result = filterTradesBySearch(trades, searchTerm);
+    // Start with stage filter
+    let result = filterTradesByStage(allTrades, activeStage);
+    
+    // Apply trade type filter
+    result = filterTradeByTradeType(result, activeTradeType);
+    
+    // Apply search filter
+    result = filterTradesBySearch(result, searchTerm);
     
     // Financial Year filter
     if (selectedFY) {
@@ -86,11 +86,9 @@ export const TradeListPage: React.FC = () => {
         return tradeDate >= fyStart && tradeDate <= fyEnd;
       });
     }
-    result = filterTradeByTradeType(result, activeTradeType);
-    
     
     return result;
-  }, [trades, searchTerm, selectedFY, activeTradeType]);
+  }, [allTrades, activeStage, activeTradeType, searchTerm, selectedFY]);
 
   // Permission checks
   const canCreate = canCreateTrade(role);
@@ -121,13 +119,13 @@ export const TradeListPage: React.FC = () => {
   }, []);
 
   const handleConfirmCancel = useCallback(
-    async (cancelReason: string) => {
+    async (reason: string) => {
       if (!selectedTrade) return;
 
       try {
         await cancelTrade({
           id: selectedTrade.id,
-          cancelReason,
+          reason,
         }).unwrap();
         handleCloseCancel();
       } catch (error) {
@@ -165,16 +163,14 @@ export const TradeListPage: React.FC = () => {
     return () => clearActions();
   }, [canCreate, isFetching, setActions, clearActions, navigate, refetch]);
 
-  // Get count for each stage
-  const getStageCounts = useCallback(() => {
-    const counts: Record<string, number> = { all: trades.length };
-    trades.forEach((trade) => {
+  // Get count for each stage from ALL trades (not filtered)
+  const stageCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: allTrades.length };
+    allTrades.forEach((trade) => {
       counts[trade.tradeStage] = (counts[trade.tradeStage] || 0) + 1;
     });
     return counts;
-  }, [trades]);
-
-  const stageCounts = getStageCounts();
+  }, [allTrades]);
 
   return (
     <div className="space-y-4">
@@ -410,7 +406,7 @@ export const TradeListPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <p className={cn('text-sm', isDark ? 'text-slate-400' : 'text-slate-500')}>
           Showing <span className="font-medium">{filteredTrades.length}</span> of{' '}
-          <span className="font-medium">{trades.length}</span> trades
+          <span className="font-medium">{allTrades.length}</span> trades
         </p>
       </div>
 

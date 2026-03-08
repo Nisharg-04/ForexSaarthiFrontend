@@ -128,8 +128,8 @@ export const TradeInfoCard: React.FC<TradeInfoCardProps> = ({ trade, isDark = fa
         </div>
       )}
 
-      {/* Approval Details (if approved) */}
-      {trade.tradeStage === TradeStage.APPROVED && trade.approvedAt && (
+      {/* Approval Details (if approved or active) */}
+      {(trade.tradeStage === TradeStage.APPROVED || trade.tradeStage === TradeStage.ACTIVE) && trade.approvedAt && (
         <div
           className={cn(
             'mt-4 pt-4 border-t',

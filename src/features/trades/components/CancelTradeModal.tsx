@@ -9,7 +9,7 @@ interface CancelTradeModalProps {
   isOpen: boolean;
   trade: Trade | null;
   onClose: () => void;
-  onConfirm: (cancelReason: string) => Promise<void>;
+  onConfirm: (reason: string) => Promise<void>;
   isDark?: boolean;
   isLoading?: boolean;
 }
@@ -151,7 +151,7 @@ export const CancelTradeModal: React.FC<CancelTradeModalProps> = ({
               {/* Cancel Reason */}
               <div>
                 <label
-                  htmlFor="cancelReason"
+                  htmlFor="reason"
                   className={cn(
                     'block text-sm font-medium mb-1.5',
                     isDark ? 'text-slate-300' : 'text-slate-700'
@@ -160,7 +160,7 @@ export const CancelTradeModal: React.FC<CancelTradeModalProps> = ({
                   Cancel Reason <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  id="cancelReason"
+                  id="reason"
                   value={reason}
                   onChange={handleReasonChange}
                   onBlur={handleBlur}

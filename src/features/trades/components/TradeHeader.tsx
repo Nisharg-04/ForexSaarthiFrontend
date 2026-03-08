@@ -1,6 +1,6 @@
 import React from 'react';
-import { ArrowLeft, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Clock, FolderOpen } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { cn, formatDate } from '../../../utils/helpers';
 import type { Trade } from '../types';
 import { TradeStageBadge } from './TradeStageBadge';
@@ -32,12 +32,17 @@ export const TradeHeader: React.FC<TradeHeaderProps> = ({ trade, isDark = false 
         };
       case TradeStage.APPROVED:
         return {
-          message: 'This trade has been approved. You can now close it when complete.',
+          message: 'This trade has been approved. You can now add invoices or close it when complete.',
           type: 'success',
+        };
+      case TradeStage.ACTIVE:
+        return {
+          message: 'This trade is active with invoices attached. You can add more invoices or close it when complete.',
+          type: 'active',
         };
       case TradeStage.CANCELLED:
         return {
-          message: `This trade was cancelled. Reason: ${trade.cancelReason || 'No reason provided'}`,
+          message: `This trade was cancelled. Reason: ${trade.Reason || 'No reason provided'}`,
           type: 'error',
         };
       case TradeStage.CLOSED:
@@ -56,6 +61,7 @@ export const TradeHeader: React.FC<TradeHeaderProps> = ({ trade, isDark = false 
     info: isDark ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600',
     warning: isDark ? 'bg-amber-900/30 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-700',
     success: isDark ? 'bg-emerald-900/30 border-emerald-500/30 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    active: isDark ? 'bg-cyan-900/30 border-cyan-500/30 text-cyan-300' : 'bg-cyan-50 border-cyan-200 text-cyan-700',
     error: isDark ? 'bg-red-900/30 border-red-500/30 text-red-300' : 'bg-red-50 border-red-200 text-red-700',
     closed: isDark ? 'bg-blue-900/30 border-blue-500/30 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-700',
   };
@@ -104,6 +110,20 @@ export const TradeHeader: React.FC<TradeHeaderProps> = ({ trade, isDark = false 
             </div>
           </div>
         </div>
+
+        {/* Documents Button */}
+        <Link
+          to={`/dashboard/trades/${trade.id}/documents`}
+          className={cn(
+            'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+            isDark
+              ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'
+              : 'bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-slate-200'
+          )}
+        >
+          <FolderOpen className="w-4 h-4" />
+          Documents
+        </Link>
       </div>
 
       {/* Status Banner */}

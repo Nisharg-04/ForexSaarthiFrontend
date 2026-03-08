@@ -3,6 +3,7 @@ export const TradeStage = {
   DRAFT: 'DRAFT',
   SUBMITTED: 'SUBMITTED',
   APPROVED: 'APPROVED',
+  ACTIVE: 'ACTIVE',       // When first invoice is added
   CANCELLED: 'CANCELLED',
   CLOSED: 'CLOSED',
 } as const;
@@ -48,10 +49,13 @@ partyName:string
   approvedByName?: string;
   approvedAt?: string;
   
+  // Active stage (when first invoice added)
+  activatedAt?: string;
+  
   cancelledBy?: string;
   cancelledByName?: string;
   cancelledAt?: string;
-  cancelReason?: string;
+  Reason?: string;
   
   closedBy?: string;
   closedByName?: string;
@@ -76,7 +80,7 @@ export interface UpdateTradeRequest {
 
 export interface CancelTradeRequest {
   id: string;
-  cancelReason: string;
+  reason: string;
 }
 
 // API Response Types
@@ -103,6 +107,7 @@ export interface TradesResponse {
 // Filter Types
 export interface TradeFilters {
   stage?: TradeStage;
+  stages?: TradeStage[]; // Support multiple stages filter
   tradeType?: TradeType;
   partyId?: string;
   search?: string;
