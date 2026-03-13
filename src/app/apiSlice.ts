@@ -102,6 +102,7 @@ export const apiSlice = createApi({
     'Company',
     'Party',
     'Trade',
+    'Forward',
     'Invoice',
     'Payment',
     'Exposure',
