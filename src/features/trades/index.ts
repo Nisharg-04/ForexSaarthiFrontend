@@ -8,6 +8,8 @@ export { TradeInfoCard } from './components/TradeInfoCard';
 export { TradeTimeline } from './components/TradeTimeline';
 export { TradeActions } from './components/TradeActions';
 export { CancelTradeModal } from './components/CancelTradeModal';
+export { TradeInvoicesSection } from './components/TradeInvoicesSection';
+export { TradeDocumentsSection } from './components/TradeDocumentsSection';
 
 // Pages
 export { TradeListPage } from './pages/TradeListPage';

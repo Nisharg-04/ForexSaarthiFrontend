@@ -18,6 +18,7 @@ import { TradeActions } from '../components/TradeActions';
 import { TradeForm } from '../components/TradeForm';
 import { CancelTradeModal } from '../components/CancelTradeModal';
 import { TradeInvoicesSection } from '../components/TradeInvoicesSection';
+import { TradeDocumentsSection } from '../components/TradeDocumentsSection';
 import type { TradeFormData } from '../types';
 import { useUpdateTradeMutation } from '../api/tradeApi';
 import { canEditTrade } from '../tradeUtils';
@@ -212,6 +213,12 @@ export const TradeDetailsPage: React.FC = () => {
             tradeId={trade.id}
             tradeNumber={trade.tradeNumber}
             tradeStage={trade.tradeStage}
+            isDark={isDark}
+            userRole={role}
+          />
+          <TradeDocumentsSection
+            tradeId={trade.id}
+            tradeNumber={trade.tradeNumber}
             isDark={isDark}
             userRole={role}
           />

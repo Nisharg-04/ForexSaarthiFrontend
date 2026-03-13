@@ -12,6 +12,7 @@ import {
   Building2,
   UserCog,
   Coins,
+  FolderOpen,
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks/useRedux';
 import { useAuth } from '../../hooks/useRedux';
@@ -25,6 +26,7 @@ const navItems = [
   { path: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true, hotkey: 'O', underlineIndices: [0] },
   { path: '/dashboard/trades', label: 'Trades', icon: TrendingUp, hotkey: 'T', underlineIndices: [0] },
   { path: '/dashboard/invoices', label: 'Invoices', icon: FileText, hotkey: 'I', underlineIndices: [0] },
+  { path: '/dashboard/documents', label: 'Documents', icon: FolderOpen, hotkey: 'D', underlineIndices: [0] },
   { path: '/dashboard/exposures', label: 'Exposure', icon: Activity, hotkey: 'E', underlineIndices: [0] },
   { path: '/dashboard/payments', label: 'Payments', icon: CreditCard, hotkey: 'PY', underlineIndices: [0, 2] }, // P and Y underlined
   { path: '/dashboard/parties', label: 'Parties', icon: Users, hotkey: 'PR', underlineIndices: [0, 2] }, // P and R underlined

@@ -17,6 +17,7 @@ import { TradeListPage, CreateTradePage, TradeDetailsPage, EditTradePage } from 
 import { InvoiceListPage, InvoiceCreatePage, InvoiceDetailPage, InvoiceEditPage } from './features/invoices';
 import { ForexDashboardPage, ForexUsagePage } from './features/forex';
 import { ExposureDashboard, ExposureListPage, ExposureDetailPage, HedgeManagementPage, QuarterlyReportView } from './features/exposure';
+import { CompanyDocumentsPage, TradeDocumentsPage } from './features/documents';
 import { PaymentsPage, SettingsPage } from './pages/DashboardPlaceholders';
 import { ActionBarProvider } from './components/ui/BottomActionBar';
 
@@ -107,9 +108,14 @@ function App() {
             <Route path="forex" element={<ForexDashboardPage />} />
             <Route path="forex/usage" element={<ForexUsagePage />} />
             
+            {/* Documents Module */}
+            <Route path="documents" element={<CompanyDocumentsPage />} />
+            <Route path="trades/:tradeId/documents" element={<TradeDocumentsPage />} />
+            
             {/* Company Management (Admin only - enforced in components) */}
             <Route path="company/edit" element={<EditCompanyPage />} />
             <Route path="company/users" element={<CompanyUsersPage />} />
+            
           </Route>
 
           {/* Fallback */}

@@ -108,6 +108,7 @@ export const apiSlice = createApi({
     'Hedge',
     'Audit',
     'Dashboard',
+    'Document',
     // Forex module tags (read-only market data)
     'ForexLatest',
     'ForexHistorical',
