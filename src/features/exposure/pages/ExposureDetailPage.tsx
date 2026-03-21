@@ -635,7 +635,7 @@ export const ExposureDetailPage: React.FC<ExposureDetailPageProps> = ({ isDark =
       <BookForwardContractModal
         isOpen={bookForwardOpen}
         onClose={() => setBookForwardOpen(false)}
-        exposure={exposure ? { id: exposure.id, currency: exposure.currency, unhedgedAmount: exposure.unhedgedAmount, maturityDate: exposure.maturityDate, description: exposure.description } : null}
+        exposure={exposure}
         isDark={isDark}
       />
     </div>
