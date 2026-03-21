@@ -70,7 +70,7 @@ export const DocumentActionsMenu: React.FC<DocumentActionsMenuProps> = ({
       {/* Dropdown Menu */}
       {isOpen && (
         <div className={cn(
-          'absolute right-0 z-50 mt-1 w-48 border rounded-lg',
+          'absolute right-0 z-40 mt-1 w-48 border rounded-lg',
           dropdownClasses
         )}>
           <div className="py-1">

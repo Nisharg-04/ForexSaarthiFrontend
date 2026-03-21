@@ -277,9 +277,9 @@ export const ForwardFilters: React.FC<ForwardFiltersProps> = ({
             Year
           </label>
           <Select
-            value={filters.year}
+            value={filters.year ? String(filters.year) : ''}
             onChange={(v) => onFilterChange('year', v ? parseInt(v) : undefined)}
-            options={[{ value: '', label: 'All Years' }, ...yearOptions]}
+            options={[{ value: '', label: 'All Years' }, ...yearOptions.map(y => ({ value: String(y), label: String(y) }))]}
             isDark={isDark}
           />
         </div>
@@ -294,7 +294,7 @@ export const ForwardFilters: React.FC<ForwardFiltersProps> = ({
           <Select
             value={filters.quarter}
             onChange={(v) => onFilterChange('quarter', v)}
-            options={QUARTERS.map((q: typeof QUARTERS[number]) => ({ value: q.value, label: q.label }))}
+            options={[{ value: '', label: 'All Quarters' }, ...QUARTERS.map((q) => ({ value: q, label: q }))]}
             isDark={isDark}
           />
         </div>

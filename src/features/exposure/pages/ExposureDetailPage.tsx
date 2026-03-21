@@ -33,6 +33,7 @@ import { ExposureStatusBadge } from '../components/ExposureStatusBadge';
 import { HedgeProgressBar, ExposureBreakdownBar } from '../components/HedgeProgressBar';
 import { ExposureActionsMenu } from '../components/ExposureActionsMenu';
 import { ForwardHedgeModal } from '../modals/ForwardHedgeModal';
+import { BookForwardContractModal } from '../modals/BookForwardContractModal';
 import { NaturalHedgeModal } from '../modals/NaturalHedgeModal';
 import { CloseHedgeModal } from '../modals/CloseHedgeModal';
 import { useExposureActionPermissions } from '../hooks/useExposurePermissions';
@@ -79,6 +80,7 @@ export const ExposureDetailPage: React.FC<ExposureDetailPageProps> = ({ isDark =
   const [forwardHedgeOpen, setForwardHedgeOpen] = useState(false);
   const [naturalHedgeOpen, setNaturalHedgeOpen] = useState(false);
   const [closeHedgeOpen, setCloseHedgeOpen] = useState(false);
+  const [bookForwardOpen, setBookForwardOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
 
   // Theme classes
@@ -488,6 +490,19 @@ export const ExposureDetailPage: React.FC<ExposureDetailPageProps> = ({ isDark =
                       Apply Forward Hedge
                     </button>
                   )}
+                  {permissions.canApplyForward && exposure && exposure.unhedgedAmount > 0 && (
+                    <button
+                      onClick={() => setBookForwardOpen(true)}
+                      className={`
+                        w-full px-3 py-2 rounded-lg text-sm font-medium text-left
+                        flex items-center gap-2 transition-colors
+                        ${isDark ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-50 text-gray-700'}
+                      `}
+                    >
+                      <FileText className="h-4 w-4 text-violet-500" />
+                      Book Forward Contract
+                    </button>
+                  )}
                   {permissions.canApplyNatural && (
                     <button
                       onClick={() => setNaturalHedgeOpen(true)}
@@ -614,6 +629,13 @@ export const ExposureDetailPage: React.FC<ExposureDetailPageProps> = ({ isDark =
         isOpen={closeHedgeOpen}
         onClose={() => setCloseHedgeOpen(false)}
         exposure={exposure}
+        isDark={isDark}
+      />
+
+      <BookForwardContractModal
+        isOpen={bookForwardOpen}
+        onClose={() => setBookForwardOpen(false)}
+        exposure={exposure ? { id: exposure.id, currency: exposure.currency, unhedgedAmount: exposure.unhedgedAmount, maturityDate: exposure.maturityDate, description: exposure.description } : null}
         isDark={isDark}
       />
     </div>

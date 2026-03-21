@@ -67,8 +67,8 @@ export const useCurrencyList = (options: UseCurrencyListOptions = {}): UseCurren
   const currencies = useMemo(() => {
     if (!response?.data) return [];
     
-    let list: Currency[] = response.data;
-    
+    let list = response.data;
+    // cconsole.log(list)
     // Filter inactive if needed
     if (!includeInactive) {
       list = list.filter((c: Currency) => c.isActive);

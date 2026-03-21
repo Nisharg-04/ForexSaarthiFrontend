@@ -159,11 +159,9 @@ export const Home = () => {
                     <p className="text-sm text-gray-600 dark:text-gray-400 text-center transition-colors">
                       {item.description}
                     </p>
-
                     {/* Animated Pulse */}
                     <div className={`absolute inset-0 rounded-2xl bg-${item.color}-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                   </div>
-
                   {/* Arrow Connector (hidden on last item and mobile) */}
                   {index < 4 && (
                     <div className="hidden lg:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-20">
@@ -174,7 +172,6 @@ export const Home = () => {
               ))}
             </div>
           </div>
-
           {/* Live Stats Row */}
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 scroll-reveal opacity-0 translate-y-10 transition-all duration-700">
             {[

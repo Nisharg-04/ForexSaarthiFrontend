@@ -19,6 +19,7 @@ import { useAppSelector } from '../../../hooks/useRedux';
 import { useGetHedgesQuery, useGetHedgesByQuarterQuery } from '../api/hedgingApi';
 import { HedgeManagementTable } from '../components/HedgeManagementTable';
 import { QuarterlyNaturalHedgeModal } from '../modals/QuarterlyNaturalHedgeModal';
+import { BookForwardContractModal } from '../modals/BookForwardContractModal';
 import { CloseHedgeRecordModal } from '../modals/CloseHedgeRecordModal';
 import { getUpcomingQuarters, getCurrentQuarter } from '../hedgingUtils';
 import type { HedgeRecordResponse, HedgeFilters } from '../hedgingTypes';
@@ -45,6 +46,7 @@ export const HedgeManagementPage: React.FC<HedgeManagementPageProps> = ({ isDark
 
   // Modal state
   const [naturalHedgeModalOpen, setNaturalHedgeModalOpen] = useState(false);
+  const [bookForwardOpen, setBookForwardOpen] = useState(false);
   const [closeHedgeModal, setCloseHedgeModal] = useState<{
     open: boolean;
     hedge: HedgeRecordResponse | null;
@@ -161,6 +163,18 @@ export const HedgeManagementPage: React.FC<HedgeManagementPageProps> = ({ isDark
               >
                 <RefreshCcw className="w-4 h-4" />
                 Apply Natural Hedge
+              </button>
+              <button
+                onClick={() => setBookForwardOpen(true)}
+                className={cn(
+                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
+                  isDark
+                    ? 'bg-violet-500 text-white hover:bg-violet-600'
+                    : 'bg-violet-600 text-white hover:bg-violet-700'
+                )}
+              >
+                <FileText className="w-4 h-4" />
+                Book Forward Contract
               </button>
             </div>
           </div>
@@ -307,6 +321,13 @@ export const HedgeManagementPage: React.FC<HedgeManagementPageProps> = ({ isDark
         }}
         isDark={isDark}
         preselectedQuarter={selectedQuarter || undefined}
+      />
+
+      <BookForwardContractModal
+        isOpen={bookForwardOpen}
+        onClose={() => setBookForwardOpen(false)}
+        isDark={isDark}
+        exposure={null}
       />
 
       <CloseHedgeRecordModal

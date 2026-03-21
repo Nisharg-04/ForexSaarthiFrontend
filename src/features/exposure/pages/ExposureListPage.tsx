@@ -24,6 +24,7 @@ import { ExposureTable } from '../components/ExposureTable';
 import { ExposureFilters } from '../components/ExposureFilters';
 import { AmountSummaryCards } from '../components/ExposureSummaryCards';
 import { ForwardHedgeModal } from '../modals/ForwardHedgeModal';
+import { BookForwardContractModal } from '../modals/BookForwardContractModal';
 import { NaturalHedgeModal } from '../modals/NaturalHedgeModal';
 import { CloseHedgeModal } from '../modals/CloseHedgeModal';
 import { useExposureFilters, useExposureStatusTab } from '../hooks/useExposureFilters';
@@ -52,6 +53,9 @@ export const ExposureListPage: React.FC<ExposureListPageProps> = ({ isDark: prop
 
   // Modal state
   const [forwardHedgeModal, setForwardHedgeModal] = useState<{ open: boolean; exposure?: Exposure }>({
+    open: false,
+  });
+  const [bookForwardModal, setBookForwardModal] = useState<{ open: boolean; exposure?: Exposure }>({
     open: false,
   });
   const [naturalHedgeModal, setNaturalHedgeModal] = useState<{ open: boolean; exposure?: Exposure }>({
@@ -111,6 +115,10 @@ export const ExposureListPage: React.FC<ExposureListPageProps> = ({ isDark: prop
   // Action handlers
   const handleApplyForwardHedge = (exposure: Exposure) => {
     setForwardHedgeModal({ open: true, exposure });
+  };
+
+  const handleBookForward = (exposure: Exposure) => {
+    setBookForwardModal({ open: true, exposure });
   };
 
   const handleApplyNaturalHedge = (exposure: Exposure) => {
@@ -407,6 +415,7 @@ export const ExposureListPage: React.FC<ExposureListPageProps> = ({ isDark: prop
               exposures={exposureData?.data || []}
               isDark={isDark}
               onApplyForwardHedge={permissions.canHedge ? handleApplyForwardHedge : undefined}
+              onBookForward={permissions.canHedge ? handleBookForward : undefined}
               onApplyNaturalHedge={permissions.canHedge ? handleApplyNaturalHedge : undefined}
               onCloseHedge={permissions.canCloseHedge ? handleCloseHedge : undefined}
               sortBy={filters.sortBy}
@@ -476,6 +485,21 @@ export const ExposureListPage: React.FC<ExposureListPageProps> = ({ isDark: prop
           isOpen={forwardHedgeModal.open}
           onClose={() => setForwardHedgeModal({ open: false })}
           exposure={forwardHedgeModal.exposure}
+          isDark={isDark}
+        />
+      )}
+
+      {bookForwardModal.exposure && (
+        <BookForwardContractModal
+          isOpen={bookForwardModal.open}
+          onClose={() => setBookForwardModal({ open: false })}
+          exposure={{
+            id: bookForwardModal.exposure.id,
+            currency: bookForwardModal.exposure.currency,
+            unhedgedAmount: bookForwardModal.exposure.unhedgedAmount,
+            maturityDate: bookForwardModal.exposure.maturityDate,
+            description: bookForwardModal.exposure.description,
+          }}
           isDark={isDark}
         />
       )}

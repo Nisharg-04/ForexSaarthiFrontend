@@ -6,7 +6,7 @@
 
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, MoreVertical, Shield, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Eye, MoreVertical, Shield, ArrowUpRight, ArrowDownLeft, FileText } from 'lucide-react';
 import { cn, formatDate, formatCurrency } from '../../../utils/helpers';
 import type { Exposure } from '../types';
 import type { UserRole } from '../../../types';
@@ -27,6 +27,7 @@ interface ExposureTableProps {
   onView?: (exposure: Exposure) => void;
   onApplyHedge?: (exposure: Exposure) => void;
   onApplyForwardHedge?: (exposure: Exposure) => void;
+  onBookForward?: (exposure: Exposure) => void;
   onApplyNaturalHedge?: (exposure: Exposure) => void;
   onCloseHedge?: (exposure: Exposure) => void;
   selectedExposureId?: string | null;
@@ -44,6 +45,7 @@ export const ExposureTable: React.FC<ExposureTableProps> = ({
   onView,
   onApplyHedge,
   onApplyForwardHedge,
+  onBookForward,
   onApplyNaturalHedge,
   onCloseHedge,
   selectedExposureId,
@@ -441,6 +443,23 @@ export const ExposureTable: React.FC<ExposureTableProps> = ({
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+                      {canHedge && onBookForward && exposure.unhedgedAmount > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onBookForward(exposure);
+                          }}
+                          className={cn(
+                            'p-1 rounded transition-colors',
+                            isDark
+                              ? 'hover:bg-violet-500/20 text-violet-400'
+                              : 'hover:bg-violet-100 text-violet-600'
+                          )}
+                          title="Book Forward Contract"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </button>
+                      )}
                       {canHedge && onApplyHedge && (
                         <button
                           onClick={(e) => {

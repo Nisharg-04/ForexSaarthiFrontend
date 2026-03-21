@@ -24,8 +24,8 @@ import type {
 import {
   formatForwardAmount,
   formatINRAmount,
-  formatRate,
-  formatForwardDate,
+  formatForwardRate,
+  formatDate,
   calculateGainLoss,
 } from '../forwardUtils';
 
@@ -268,7 +268,7 @@ export const CancelForwardModal: React.FC<CancelForwardModalProps> = ({
                   Forward Rate
                 </p>
                 <p className={cn('text-sm font-medium', isDark ? 'text-white' : 'text-slate-900')}>
-                  {formatRate(contract.forwardRate)}
+                  {formatForwardRate(contract.forwardRate)}
                 </p>
               </div>
               <div>
@@ -276,7 +276,7 @@ export const CancelForwardModal: React.FC<CancelForwardModalProps> = ({
                   Bank
                 </p>
                 <p className={cn('text-sm font-medium', isDark ? 'text-white' : 'text-slate-900')}>
-                  {contract.bankName}
+                  {formatForwardRate(contract.forwardRate)}
                 </p>
               </div>
               <div>
@@ -284,7 +284,7 @@ export const CancelForwardModal: React.FC<CancelForwardModalProps> = ({
                   Settlement Date
                 </p>
                 <p className={cn('text-sm font-medium', isDark ? 'text-white' : 'text-slate-900')}>
-                  {formatForwardDate(contract.settlementDate)}
+                  {formatDate(contract.settlementDate)}
                 </p>
               </div>
             </div>

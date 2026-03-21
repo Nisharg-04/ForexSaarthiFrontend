@@ -37,6 +37,7 @@ import {
 import type { QuarterlyExposureReportResponse, HedgeRecordResponse, ExposureBriefInfo } from '../hedgingTypes';
 import { HEDGING_CHART_COLORS, HEDGE_RECORD_TYPE_STYLES, HEDGE_RECORD_STATUS_STYLES } from '../hedgingConstants';
 import { QuarterlyNaturalHedgeModal } from '../modals/QuarterlyNaturalHedgeModal';
+import { BookForwardContractModal } from '../modals/BookForwardContractModal';
 
 // ─────────────────────────────────────────────────────────────────────────────────
 // PROPS INTERFACE
@@ -65,8 +66,9 @@ export const QuarterlyReportView: React.FC<QuarterlyReportViewProps> = ({
   const [selectedQuarter, setSelectedQuarter] = useState(getCurrentQuarter());
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   
-  // Natural hedge modal state
+  // Modal states
   const [naturalHedgeModalOpen, setNaturalHedgeModalOpen] = useState(false);
+  const [bookForwardModal, setBookForwardModal] = useState<{ open: boolean; exposure?: ExposureBriefInfo }>({ open: false });
 
   // Quarters for selection
   const quarters = useMemo(() => getUpcomingQuarters(8), []);
@@ -639,20 +641,18 @@ console.log(reportData)
                             {formatHedgeDate(exp.maturityDate)}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            {onBookForward && (
-                              <button
-                                onClick={() => onBookForward(exp as ExposureBriefInfo)}
-                                className={cn(
-                                  'inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors',
-                                  isDark
-                                    ? 'bg-violet-500/20 text-violet-400 hover:bg-violet-500/30'
-                                    : 'bg-violet-50 text-violet-700 hover:bg-violet-100'
-                                )}
-                              >
-                                <FileText className="w-3 h-3" />
-                                Book Forward
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setBookForwardModal({ open: true, exposure: exp as ExposureBriefInfo })}
+                              className={cn(
+                                'inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded transition-colors',
+                                isDark
+                                  ? 'bg-violet-500/20 text-violet-400 hover:bg-violet-500/30'
+                                  : 'bg-violet-50 text-violet-700 hover:bg-violet-100'
+                              )}
+                            >
+                              <FileText className="w-3 h-3" />
+                              Book Forward
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -672,6 +672,14 @@ console.log(reportData)
         isDark={isDark}
         preselectedQuarter={selectedQuarter}
         preselectedCurrency={selectedCurrency}
+      />
+
+      {/* Book Forward Contract Modal */}
+      <BookForwardContractModal
+        isOpen={bookForwardModal.open}
+        onClose={() => setBookForwardModal({ open: false })}
+        isDark={isDark}
+        exposure={bookForwardModal.exposure || null}
       />
     </div>
   );
