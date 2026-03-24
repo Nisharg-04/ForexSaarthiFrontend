@@ -39,7 +39,7 @@ export const Home = () => {
   const scrollRef = useScrollReveal();
 
   return (
-    <div ref={scrollRef} className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div ref={scrollRef} className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       <Navbar />
 
       {/* Hero Section - Full Screen with Premium Design */}
@@ -47,7 +47,7 @@ export const Home = () => {
      
 
       {/* Trade Lifecycle Section - Complete Journey Visualization */}
-      <section className="relative py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 overflow-hidden transition-colors duration-500">
+      <section className="relative -mt-8 rounded-t-[2rem] py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-slate-50 to-white dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 overflow-hidden transition-colors duration-500 md:rounded-t-[3rem]">
         {/* Background Effects */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-0 w-[600px] h-[600px] bg-blue-200/40 dark:bg-blue-600/10 rounded-full blur-[120px]" />
