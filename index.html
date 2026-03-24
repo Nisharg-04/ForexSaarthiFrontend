@@ -6,9 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <title>ForexSaarthi - Trade Globally, Settle Confidently</title>
+
+    <!-- Google Translate CSS patches -->
+    <style>
+      #goog-gt-tt{
+        display: none !important;
+        visibility: hidden !important;
+      }
+      .skiptranslate {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      body {
+        position: relative;
+        top: 0 !important;
+      }
+    </style>
+
     <script>
       // Check for dark mode preference - sync with Redux store key
-      if (localStorage.getItem('forexsaarthi_theme') === 'dark' || 
+      if (localStorage.getItem('forexsaarthi_theme') === 'dark' ||
           (!localStorage.getItem('forexsaarthi_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
       }

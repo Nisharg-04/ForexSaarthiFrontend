@@ -5,7 +5,6 @@ import {
   TrendingUp,
   FileText,
   Activity,
-  CreditCard,
   Users,
   ChevronLeft,
   ChevronRight,
@@ -28,7 +27,6 @@ const navItems = [
   { path: '/dashboard/invoices', label: 'Invoices', icon: FileText, hotkey: 'I', underlineIndices: [0] },
   { path: '/dashboard/documents', label: 'Documents', icon: FolderOpen, hotkey: 'D', underlineIndices: [0] },
   { path: '/dashboard/exposures', label: 'Exposure', icon: Activity, hotkey: 'E', underlineIndices: [0] },
-  { path: '/dashboard/payments', label: 'Payments', icon: CreditCard, hotkey: 'PY', underlineIndices: [0, 2] }, // P and Y underlined
   { path: '/dashboard/parties', label: 'Parties', icon: Users, hotkey: 'PR', underlineIndices: [0, 2] }, // P and R underlined
   { path: '/dashboard/forex', label: 'Forex Rates', icon: Coins, hotkey: 'F', underlineIndices: [0] },
 ];
@@ -122,14 +120,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onTo
                   end={item.end}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group',
+                      'flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors duration-150 group',
                       isActive
                         ? isDark 
                           ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' 
                           : 'bg-teal-50 text-teal-700 border border-teal-200'
                         : isDark
-                          ? 'text-slate-400 hover:text-white hover:bg-slate-800'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
+                          ? 'text-slate-400 border-transparent hover:text-white hover:bg-slate-800'
+                          : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100',
                       !isOpen && 'justify-center'
                     )
                   }
@@ -172,14 +170,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onTo
                     to={item.path}
                     className={({ isActive }) =>
                       cn(
-                        'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group',
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors duration-150 group',
                         isActive
                           ? isDark 
                             ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' 
                             : 'bg-teal-50 text-teal-700 border border-teal-200'
                           : isDark
-                            ? 'text-slate-400 hover:text-white hover:bg-slate-800'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
+                            ? 'text-slate-400 border-transparent hover:text-white hover:bg-slate-800'
+                            : 'text-slate-600 border-transparent hover:text-slate-900 hover:bg-slate-100',
                         !isOpen && 'justify-center'
                       )
                     }

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { MoreVertical, Eye, Download, Edit2, Trash2 } from 'lucide-react';
 import { cn } from '../../../utils/helpers';
 import type { Document } from '../types';
@@ -25,7 +26,14 @@ export const DocumentActionsMenu: React.FC<DocumentActionsMenuProps> = ({
   canDelete = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; openUpward: boolean }>({
+    top: 0,
+    left: 0,
+    openUpward: false,
+  });
   const menuRef = useRef<HTMLDivElement>(null);
+  const portalMenuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Theme-aware classes
   const hoverBg = isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100';
@@ -38,7 +46,12 @@ export const DocumentActionsMenu: React.FC<DocumentActionsMenuProps> = ({
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const targetNode = event.target as Node;
+      const clickedInsideWrapper = menuRef.current?.contains(targetNode);
+      const clickedInsidePortalMenu = portalMenuRef.current?.contains(targetNode);
+      const clickedMenuButton = buttonRef.current?.contains(targetNode);
+
+      if (!clickedInsideWrapper && !clickedInsidePortalMenu && !clickedMenuButton) {
         setIsOpen(false);
       }
     };
@@ -46,6 +59,46 @@ export const DocumentActionsMenu: React.FC<DocumentActionsMenuProps> = ({
     globalThis.document.addEventListener('mousedown', handleClickOutside);
     return () => globalThis.document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen || !buttonRef.current) {
+      return;
+    }
+
+    const updateMenuPosition = () => {
+      if (!buttonRef.current) return;
+
+      const rect = buttonRef.current.getBoundingClientRect();
+      const estimatedMenuHeight = 220;
+      const viewportPadding = 8;
+      const menuWidth = 192;
+
+      const spaceBelow = globalThis.window.innerHeight - rect.bottom;
+      const openUpward = spaceBelow < estimatedMenuHeight;
+
+      const left = Math.max(
+        viewportPadding,
+        Math.min(rect.right - menuWidth, globalThis.window.innerWidth - menuWidth - viewportPadding)
+      );
+
+      const top = openUpward
+        ? Math.max(viewportPadding, rect.top - viewportPadding)
+        : Math.min(rect.bottom + 4, globalThis.window.innerHeight - viewportPadding);
+
+      setMenuPosition({ top, left, openUpward });
+    };
+
+    const closeOnScroll = () => setIsOpen(false);
+
+    updateMenuPosition();
+    globalThis.window.addEventListener('resize', updateMenuPosition);
+    globalThis.window.addEventListener('scroll', closeOnScroll, true);
+
+    return () => {
+      globalThis.window.removeEventListener('resize', updateMenuPosition);
+      globalThis.window.removeEventListener('scroll', closeOnScroll, true);
+    };
+  }, [isOpen]);
 
   const handleAction = (action: () => void | undefined) => {
     action?.();
@@ -56,6 +109,7 @@ export const DocumentActionsMenu: React.FC<DocumentActionsMenuProps> = ({
     <div className="relative" ref={menuRef}>
       {/* Menu Button */}
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'p-2 rounded-lg transition-colors',
@@ -68,11 +122,19 @@ export const DocumentActionsMenu: React.FC<DocumentActionsMenuProps> = ({
       </button>
 
       {/* Dropdown Menu */}
-      {isOpen && (
-        <div className={cn(
-          'absolute right-0 z-40 mt-1 w-48 border rounded-lg',
-          dropdownClasses
-        )}>
+      {isOpen && createPortal(
+        <div
+          ref={portalMenuRef}
+          className={cn(
+            'fixed z-[9999] w-48 max-h-[70vh] overflow-y-auto border rounded-lg',
+            dropdownClasses
+          )}
+          style={{
+            left: `${menuPosition.left}px`,
+            top: `${menuPosition.top}px`,
+            transform: menuPosition.openUpward ? 'translateY(-100%)' : undefined,
+          }}
+        >
           <div className="py-1">
             {/* Preview */}
             {onPreview && (
@@ -139,7 +201,8 @@ export const DocumentActionsMenu: React.FC<DocumentActionsMenuProps> = ({
               </>
             )}
           </div>
-        </div>
+        </div>,
+        globalThis.document.body
       )}
     </div>
   );

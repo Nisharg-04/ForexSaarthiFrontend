@@ -15,7 +15,7 @@ import { InvoiceExposurePanel } from '../components/InvoiceExposurePanel';
 import { InvoicePrintButton } from '../components/InvoicePrintButton';
 import { RecordPaymentModal } from '../components/RecordPaymentModal';
 import { PaymentHistoryPanel } from '../components/PaymentHistoryPanel';
-import { canIssueInvoice, canCancelInvoice, hasExposure, convertLineItemsFromApi, canRecordPayment, hasOutstandingBalance } from '../invoiceUtils';
+import { canIssueInvoice, canCancelInvoice, hasExposure, convertLineItemsFromApi, canRecordPayment, hasOutstandingBalance, resolveInvoicePaymentAmounts } from '../invoiceUtils';
 import { InvoiceStatus } from '../types';
 
 export const InvoiceDetailPage: React.FC = () => {
@@ -146,7 +146,8 @@ export const InvoiceDetailPage: React.FC = () => {
   const showExposure = hasExposure(invoice);
   const showPayments = !isDraft && invoice.status !== InvoiceStatus.CANCELLED;
   const canPayment = canRecordPayment(role, invoice) && hasOutstandingBalance(invoice);
-  console.log(invoice)
+  const { paidAmount: resolvedPaidAmount, outstandingAmount: resolvedOutstandingAmount } =
+    resolveInvoicePaymentAmounts(invoice);
 
   return (
     <div className="space-y-4">
@@ -420,7 +421,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     isDark ? 'text-emerald-400' : 'text-emerald-600'
                   )}
                 >
-                  {formatCurrency(invoice.paymentInfo?.totalPaidAmount, invoice.currency, false)}
+                  {formatCurrency(resolvedPaidAmount, invoice.currency, false)}
                 </span>
               </div>
 
@@ -440,7 +441,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   <span
                     className={cn(
                       'font-mono text-sm font-semibold',
-                      (invoice.outstandingAmount ?? 0) > 0
+                      resolvedOutstandingAmount > 0
                         ? isDark
                           ? 'text-amber-400'
                           : 'text-amber-600'
@@ -449,7 +450,7 @@ export const InvoiceDetailPage: React.FC = () => {
                         : 'text-emerald-600'
                     )}
                   >
-                    {formatCurrency(invoice.outstandingAmount, invoice.currency, false)}
+                    {formatCurrency(resolvedOutstandingAmount, invoice.currency, false)}
                   </span>
                 </div>
               </div>
@@ -477,7 +478,7 @@ export const InvoiceDetailPage: React.FC = () => {
             >
               {formatDate(invoice.dueDate)}
             </p>
-            {new Date(invoice.dueDate) < new Date() && (invoice.outstandingAmount ?? 0) > 0 && (
+            {new Date(invoice.dueDate) < new Date() && resolvedOutstandingAmount > 0 && (
               <p className={cn('text-xs mt-1', isDark ? 'text-red-400' : 'text-red-600')}>
                 ⚠️ Overdue
               </p>

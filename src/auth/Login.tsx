@@ -23,22 +23,6 @@ import { setCredentials, selectIsAuthenticated } from '../app/authSlice';
 import { apiSlice } from '../app/apiSlice';
 import type { FormErrors } from '../types/auth';
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: { credential: string }) => void;
-          }) => void;
-          renderButton: (element: HTMLElement, config: object) => void;
-        };
-      };
-    };
-  }
-}
-
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,7 +59,7 @@ const Login = () => {
   // Initialize Google Sign-In
   useEffect(() => {
     const initializeGoogleSignIn = () => {
-      if (window.google) {
+      if (window.google?.accounts?.id) {
         window.google.accounts.id.initialize({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
           callback: handleGoogleCallback,

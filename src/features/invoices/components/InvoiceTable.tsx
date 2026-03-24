@@ -7,6 +7,7 @@ import { InvoiceStatusBadge } from './InvoiceStatusBadge';
 import { canEditInvoice } from '../invoiceUtils';
 import { UserRole } from '../../../types';
 import { downloadInvoicePdf } from '../utils/invoicePdfGenerator';
+import { useLazyGetInvoiceQuery } from '../api/invoiceApi';
 
 interface InvoiceTableProps {
   invoices: Invoice[];
@@ -28,6 +29,17 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({
   isLoading = false,
 }) => {
   const navigate = useNavigate();
+  const [fetchInvoiceById] = useLazyGetInvoiceQuery();
+
+  const handlePrint = async (invoice: Invoice) => {
+    try {
+      const fullInvoiceResponse = await fetchInvoiceById(invoice.id).unwrap();
+      const fullInvoice = fullInvoiceResponse?.data ?? invoice;
+      downloadInvoicePdf({ invoice: fullInvoice });
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+    }
+  };
 
   // Loading State - Skeleton
   if (isLoading) {
@@ -300,7 +312,7 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({
 
                     {/* Print/Download PDF */}
                     <button
-                      onClick={() => downloadInvoicePdf({ invoice })}
+                      onClick={() => handlePrint(invoice)}
                       className={cn(
                         'p-1.5 rounded-md transition-colors',
                         isDark

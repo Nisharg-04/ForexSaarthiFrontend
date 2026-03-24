@@ -118,6 +118,7 @@ export const {
   useGetInvoicesQuery,
   useGetInvoicesByTradeQuery,
   useGetInvoiceQuery,
+  useLazyGetInvoiceQuery,
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useIssueInvoiceMutation,

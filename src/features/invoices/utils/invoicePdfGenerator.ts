@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import type { Invoice } from '../types';
 import type { Company } from '../../../types';
 import { formatDate, formatCurrency } from '../../../utils/helpers';
+import { resolveInvoicePaymentAmounts } from '../invoiceUtils';
 
 // Extend jsPDF to include autoTable
 interface jsPDFWithAutoTable extends jsPDF {
@@ -87,6 +88,19 @@ const getStatusStyle = (status: string): { color: [number, number, number]; labe
   }
 };
 
+const ensurePageSpace = (
+  doc: jsPDFWithAutoTable,
+  yPosition: number,
+  requiredHeight: number
+): number => {
+  const bottomLimit = PDF_CONFIG.pageHeight - PDF_CONFIG.margin.bottom;
+  if (yPosition + requiredHeight > bottomLimit) {
+    doc.addPage();
+    return PDF_CONFIG.margin.top;
+  }
+  return yPosition;
+};
+
 // Draw the professional header with logo space
 const drawProfessionalHeader = (
   doc: jsPDFWithAutoTable,
@@ -127,19 +141,21 @@ const drawProfessionalHeader = (
 
   // Company name next to logo
   const companyInfoX = leftColX + logoSize + 8;
+  const companyTextWidth = 72;
+  const companyNameLines = doc.splitTextToSize(company?.name || 'Company Name', companyTextWidth);
   doc.setFontSize(fonts.headingSize);
   doc.setTextColor(...colors.dark);
   doc.setFont('helvetica', 'bold');
-  doc.text(company?.name || 'Company Name', companyInfoX, yPosition + 6);
+  doc.text(companyNameLines, companyInfoX, yPosition + 6);
 
   // Company address
   doc.setFontSize(fonts.smallSize);
   doc.setTextColor(...colors.muted);
   doc.setFont('helvetica', 'normal');
   
-  let companyY = yPosition + 12;
+  let companyY = yPosition + 8 + companyNameLines.length * 4.5;
   if (company?.address) {
-    const addressLines = doc.splitTextToSize(company.address, 70);
+    const addressLines = doc.splitTextToSize(company.address, companyTextWidth);
     doc.text(addressLines, companyInfoX, companyY);
     companyY += addressLines.length * 4;
   }
@@ -153,6 +169,7 @@ const drawProfessionalHeader = (
   if (taxInfo.length > 0) {
     doc.setFontSize(fonts.tinySize);
     doc.text(taxInfo.join('  •  '), companyInfoX, companyY);
+    companyY += 3;
   }
 
   // ===== RIGHT SIDE: Invoice Title & Number =====
@@ -181,7 +198,11 @@ const drawProfessionalHeader = (
   doc.setFont('helvetica', 'bold');
   doc.text(invoiceType, rightColX - typeWidth / 2, yPosition + 25, { align: 'center' });
 
-  yPosition += logoSize + 15;
+  const rightContentBottom = yPosition + 27;
+  const leftContentBottom = Math.max(yPosition + logoSize, companyY);
+  const headerContentBottom = Math.max(leftContentBottom, rightContentBottom);
+
+  yPosition = headerContentBottom + 8;
 
   // Divider line
   doc.setDrawColor(...colors.border);
@@ -251,10 +272,11 @@ const drawPartySection = (
   data: InvoicePdfData,
   yPosition: number
 ): number => {
-  const { invoice, party, company } = data;
+  const { invoice, party } = data;
   const { margin, colors, fonts, pageWidth } = PDF_CONFIG;
   const contentWidth = pageWidth - margin.left - margin.right;
   const halfWidth = (contentWidth - 10) / 2;
+  const partyLogoSize = 12;
 
   // ===== BILL TO Section =====
   const billToX = margin.left;
@@ -268,14 +290,28 @@ const drawPartySection = (
   yPosition += 5;
 
   // Bill To Box
-  const boxHeight = 32;
+  const partyTextWidth = halfWidth - partyLogoSize - 18;
+  const partyName = invoice.partyName || party?.name || 'Party Name';
+  const partyNameLines = doc.splitTextToSize(partyName, partyTextWidth);
+  const addressLines = party?.address ? doc.splitTextToSize(party.address, partyTextWidth) : [];
+  const contactLineCount =
+    (party?.country ? 1 : 0) +
+    (party?.email || party?.contactEmail ? 1 : 0) +
+    (party?.phone || party?.contactPhone ? 1 : 0);
+
+  const textHeight =
+    partyNameLines.length * 4.5 +
+    addressLines.length * 3.5 +
+    contactLineCount * 3.5 +
+    10;
+  const boxHeight = Math.max(32, textHeight + 8);
+
   doc.setFillColor(...colors.white);
   doc.setDrawColor(...colors.border);
   doc.setLineWidth(0.3);
   doc.roundedRect(billToX, yPosition, halfWidth, boxHeight, 2, 2, 'FD');
 
   // Party logo placeholder (small)
-  const partyLogoSize = 12;
   doc.setFillColor(...colors.light);
   doc.roundedRect(billToX + 4, yPosition + 4, partyLogoSize, partyLogoSize, 1, 1, 'F');
   
@@ -289,15 +325,14 @@ const drawPartySection = (
   doc.setFontSize(fonts.normalSize);
   doc.setTextColor(...colors.dark);
   doc.setFont('helvetica', 'bold');
-  doc.text(invoice.partyName || party?.name || 'Party Name', partyInfoX, yPosition + 8);
+  doc.text(partyNameLines, partyInfoX, yPosition + 8);
 
   doc.setFontSize(fonts.smallSize);
   doc.setTextColor(...colors.text);
   doc.setFont('helvetica', 'normal');
 
-  let partyY = yPosition + 14;
-  if (party?.address) {
-    const addressLines = doc.splitTextToSize(party.address, halfWidth - partyLogoSize - 18);
+  let partyY = yPosition + 10 + partyNameLines.length * 4;
+  if (addressLines.length > 0) {
     doc.text(addressLines, partyInfoX, partyY);
     partyY += addressLines.length * 3.5;
   }
@@ -329,9 +364,10 @@ const drawLineItemsTable = (
 ): number => {
   const { invoice } = data;
   const { margin, colors, fonts } = PDF_CONFIG;
+  const lineItems = Array.isArray(invoice.lineItems) ? invoice.lineItems : [];
 
   // Table data
-  const tableData = invoice.lineItems.map((item, index) => [
+  const tableData = lineItems.map((item, index) => [
     (index + 1).toString(),
     item.description || '-',
     item.hsCode || '-',
@@ -378,7 +414,7 @@ const drawLineItemsTable = (
     },
     didDrawCell: (data) => {
       // Add bottom border to last row
-      if (data.row.index === tableData.length - 1 && data.section === 'body') {
+      if (tableData.length > 0 && data.row.index === tableData.length - 1 && data.section === 'body') {
         const { doc: cellDoc, cell } = data;
         cellDoc.setDrawColor(...colors.primary);
         cellDoc.setLineWidth(0.5);
@@ -408,9 +444,14 @@ const drawTotalsSection = (
   const totalsX = pageWidth - margin.right - totalsWidth;
   const labelX = totalsX + 5;
   const valueX = pageWidth - margin.right - 5;
+  const lineItems = Array.isArray(invoice.lineItems) ? invoice.lineItems : [];
 
   // Calculate subtotal from line items if not provided
-  const calculatedSubtotal = invoice.subtotal || invoice.lineItems.reduce((sum, item) => sum + (item.lineTotal || 0), 0);
+  const calculatedSubtotal = invoice.subtotal || lineItems.reduce((sum, item) => sum + (item.lineTotal || 0), 0);
+
+  // Resolve payment values from all available fields
+  const { paidAmount: resolvedPaidAmount, outstandingAmount: resolvedOutstandingAmount } =
+    resolveInvoicePaymentAmounts(invoice);
 
   // Background box for totals
   const boxStartY = yPosition - 3;
@@ -419,8 +460,10 @@ const drawTotalsSection = (
   if ((invoice.taxPercent ?? 0) > 0 || (invoice.taxAmount ?? 0) > 0) totalBoxHeight += 8;
   if (invoice.status !== 'DRAFT') totalBoxHeight += 20;
 
+  yPosition = ensurePageSpace(doc, yPosition, totalBoxHeight + 10);
+
   doc.setFillColor(...colors.light);
-  doc.roundedRect(totalsX, boxStartY, totalsWidth, totalBoxHeight, 2, 2, 'F');
+  doc.roundedRect(totalsX, yPosition - 3, totalsWidth, totalBoxHeight, 2, 2, 'F');
 
   // Add internal padding before Subtotal
   yPosition += 5;
@@ -475,15 +518,15 @@ const drawTotalsSection = (
     doc.setFont('helvetica', 'normal');
     doc.text('Paid:', labelX, yPosition);
     doc.setTextColor(...colors.success);
-    doc.text(formatPdfAmount(invoice.paidAmount, invoice.currency), valueX, yPosition, { align: 'right' });
+    doc.text(formatPdfAmount(resolvedPaidAmount, invoice.currency), valueX, yPosition, { align: 'right' });
     yPosition += 6;
 
     doc.setTextColor(...colors.muted);
     doc.text('Balance Due:', labelX, yPosition);
-    const balanceColor = (invoice.outstandingAmount ?? 0) > 0 ? colors.danger : colors.success;
+    const balanceColor = resolvedOutstandingAmount > 0 ? colors.danger : colors.success;
     doc.setTextColor(...balanceColor);
     doc.setFont('helvetica', 'bold');
-    doc.text(formatPdfAmount(invoice.outstandingAmount, invoice.currency), valueX, yPosition, { align: 'right' });
+    doc.text(formatPdfAmount(resolvedOutstandingAmount, invoice.currency), valueX, yPosition, { align: 'right' });
     yPosition += 8;
   }
 
@@ -583,9 +626,13 @@ export const generateInvoicePdf = (data: InvoicePdfData): jsPDF => {
 
   // Draw all sections
   yPosition = drawProfessionalHeader(doc, data, yPosition);
+  yPosition = ensurePageSpace(doc, yPosition, 30);
   yPosition = drawInvoiceMeta(doc, data, yPosition);
+  yPosition = ensurePageSpace(doc, yPosition, 50);
   yPosition = drawPartySection(doc, data, yPosition);
+  yPosition = ensurePageSpace(doc, yPosition, 45);
   yPosition = drawLineItemsTable(doc, data, yPosition);
+  yPosition = ensurePageSpace(doc, yPosition, 75);
   yPosition = drawTotalsSection(doc, data, yPosition);
   drawProfessionalFooter(doc, data, yPosition);
 

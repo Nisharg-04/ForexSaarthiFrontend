@@ -8,6 +8,7 @@ import {
   selectCurrentUser,
   selectIsAuthenticated,
 } from "../../app/authSlice";
+import LanguageSelector from "../LanguageSelector";
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -136,7 +137,10 @@ export const Navbar = () => {
           </div>
 
           {/* CTA Buttons & Theme Toggle */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
+            {/* Language Selector */}
+            <LanguageSelector />
+
             {/* Theme Toggle Button */}
             <button
               onClick={() => dispatch(toggleTheme())}
@@ -263,6 +267,17 @@ export const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+
+            {/* Language Selector Section for Mobile */}
+            <div className="pt-2 border-t border-gray-200 dark:border-slate-700">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4 pb-2">
+                Select Language
+              </p>
+              <div className="px-4">
+                <LanguageSelector />
+              </div>
+            </div>
+
             <div className="pt-4 space-y-2">
               {isAuthenticated ? (
                 <>

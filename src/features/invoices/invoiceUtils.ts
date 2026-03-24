@@ -569,7 +569,52 @@ export const canRecordPayment = (role: UserRole | undefined | null, invoice?: In
  */
 export const hasOutstandingBalance = (invoice?: Invoice | null): boolean => {
   if (!invoice) return false;
-  return (invoice.outstandingAmount || 0) > 0;
+  return resolveInvoicePaymentAmounts(invoice).outstandingAmount > 0;
+};
+
+/**
+ * Resolve paid and outstanding amounts from all possible invoice fields.
+ * Prefers payment summary values when available and keeps values internally consistent.
+ */
+export const resolveInvoicePaymentAmounts = (
+  invoice?: Invoice | null
+): { paidAmount: number; outstandingAmount: number } => {
+  if (!invoice) {
+    return { paidAmount: 0, outstandingAmount: 0 };
+  }
+
+  const invoiceTotal = Number.isFinite(invoice.invoiceAmount) ? Math.max(invoice.invoiceAmount || 0, 0) : 0;
+  const paymentInfoPaidRaw = Number(invoice.paymentInfo?.totalPaidAmount);
+  const paidAmountRaw = Number(invoice.paidAmount);
+  const outstandingRaw = Number(invoice.outstandingAmount);
+
+  const paymentInfoPaid = Number.isFinite(paymentInfoPaidRaw) ? paymentInfoPaidRaw : undefined;
+  const paidFromInvoice = Number.isFinite(paidAmountRaw) ? paidAmountRaw : undefined;
+  const outstandingFromInvoice = Number.isFinite(outstandingRaw) ? Math.max(outstandingRaw, 0) : undefined;
+
+  let resolvedPaid = paymentInfoPaid ?? paidFromInvoice;
+  if (resolvedPaid == null && outstandingFromInvoice != null) {
+    resolvedPaid = invoiceTotal - outstandingFromInvoice;
+  }
+  if (resolvedPaid == null) {
+    resolvedPaid = 0;
+  }
+
+  if (invoiceTotal > 0) {
+    resolvedPaid = Math.min(Math.max(resolvedPaid, 0), invoiceTotal);
+  } else {
+    resolvedPaid = Math.max(resolvedPaid, 0);
+  }
+
+  const resolvedOutstanding =
+    invoiceTotal > 0
+      ? Math.max(invoiceTotal - resolvedPaid, 0)
+      : Math.max(outstandingFromInvoice ?? 0, 0);
+
+  return {
+    paidAmount: roundToDecimal(resolvedPaid, 2),
+    outstandingAmount: roundToDecimal(resolvedOutstanding, 2),
+  };
 };
 
 /**
@@ -577,7 +622,8 @@ export const hasOutstandingBalance = (invoice?: Invoice | null): boolean => {
  */
 export const calculatePaymentPercentage = (invoice: Invoice): number => {
   if (!invoice.invoiceAmount || invoice.invoiceAmount === 0) return 0;
-  const paid = invoice.paidAmount || (invoice.invoiceAmount - (invoice.outstandingAmount || 0));
+  const { paidAmount } = resolveInvoicePaymentAmounts(invoice);
+  const paid = paidAmount;
   return roundToDecimal((paid / invoice.invoiceAmount) * 100, 1);
 };
 
@@ -596,7 +642,7 @@ export const getPaymentStatusLabel = (invoice: Invoice): string => {
  */
 export const isFullyPaid = (invoice?: Invoice | null): boolean => {
   if (!invoice) return false;
-  return invoice.status === InvoiceStatusEnum.SETTLED || (invoice.outstandingAmount || 0) <= 0;
+  return invoice.status === InvoiceStatusEnum.SETTLED || resolveInvoicePaymentAmounts(invoice).outstandingAmount <= 0;
 };
 
 /**
@@ -610,5 +656,5 @@ export const isInvoiceOverdue = (invoice?: Invoice | null): boolean => {
   const dueDate = new Date(invoice.dueDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  return dueDate < today && (invoice.outstandingAmount || 0) > 0;
+  return dueDate < today && resolveInvoicePaymentAmounts(invoice).outstandingAmount > 0;
 };

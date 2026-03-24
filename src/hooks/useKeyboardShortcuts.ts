@@ -7,8 +7,8 @@ export const NAV_ITEMS_WITH_HOTKEYS = [
   { path: '/dashboard', label: 'Overview', hotkey: 'O' },
   { path: '/dashboard/trades', label: 'Trades', hotkey: 'T' },
   { path: '/dashboard/invoices', label: 'Invoices', hotkey: 'I' },
-  { path: '/dashboard/exposure', label: 'Exposure', hotkey: 'E' },
-  { path: '/dashboard/payments', label: 'Payments', hotkey: 'Y' }, // Shift+Y for Payments
+  { path: '/dashboard/documents', label: 'Documents', hotkey: 'D' },
+  { path: '/dashboard/exposures', label: 'Exposure', hotkey: 'E' },
   { path: '/dashboard/parties', label: 'Parties', hotkey: 'R' }, // Shift+R for Parties
 ];
 

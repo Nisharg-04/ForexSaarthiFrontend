@@ -18,7 +18,7 @@ import { InvoiceListPage, InvoiceCreatePage, InvoiceDetailPage, InvoiceEditPage 
 import { ForexDashboardPage, ForexUsagePage } from './features/forex';
 import { ExposureDashboard, ExposureListPage, ExposureDetailPage, HedgeManagementPage, QuarterlyReportView } from './features/exposure';
 import { CompanyDocumentsPage, TradeDocumentsPage } from './features/documents';
-import { PaymentsPage, SettingsPage } from './pages/DashboardPlaceholders';
+import { SettingsPage } from './pages/DashboardPlaceholders';
 import { ActionBarProvider } from './components/ui/BottomActionBar';
 
 function App() {
@@ -100,7 +100,6 @@ function App() {
             {/* Legacy route redirect */}
             <Route path="exposure" element={<Navigate to="/dashboard/exposures" replace />} />
             
-            <Route path="payments" element={<PaymentsPage />} />
             <Route path="parties" element={<PartyPage />} />
             <Route path="settings" element={<SettingsPage />} />
             

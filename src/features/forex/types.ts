@@ -67,7 +67,9 @@ export interface HistoricalRatesResponse {
 // Currency List Response
 export interface CurrencyListResponse {
   success: boolean;
-  data: Currency[];
+  data: {
+    currencies: Currency[];
+  };
   message?: string;
 }
 

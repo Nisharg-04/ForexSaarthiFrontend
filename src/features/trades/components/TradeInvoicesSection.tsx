@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Plus, Eye, Pencil, Printer, ArrowRight } from 'lucide-react';
 import { cn, formatDate, formatCurrency } from '../../../utils/helpers';
-import { useGetInvoicesByTradeQuery } from '../../invoices/api/invoiceApi';
+import { useGetInvoicesByTradeQuery, useLazyGetInvoiceQuery } from '../../invoices/api/invoiceApi';
 import { InvoiceStatusBadge } from '../../invoices/components/InvoiceStatusBadge';
 import { canEditInvoice } from '../../invoices/invoiceUtils';
 import { downloadInvoicePdf } from '../../invoices/utils/invoicePdfGenerator';
@@ -31,6 +31,7 @@ export const TradeInvoicesSection: React.FC<TradeInvoicesSectionProps> = ({
 
   // Fetch invoices for this trade
   const { data, isLoading, error } = useGetInvoicesByTradeQuery(tradeId);
+  const [fetchInvoiceById] = useLazyGetInvoiceQuery();
 
   const invoices = data?.data || [];
 
@@ -48,7 +49,9 @@ export const TradeInvoicesSection: React.FC<TradeInvoicesSectionProps> = ({
 
   const handlePrint = async (invoice: Invoice) => {
     try {
-      await downloadInvoicePdf({ invoice });
+      const fullInvoiceResponse = await fetchInvoiceById(invoice.id).unwrap();
+      const fullInvoice = fullInvoiceResponse?.data ?? invoice;
+      downloadInvoicePdf({ invoice: fullInvoice });
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     }

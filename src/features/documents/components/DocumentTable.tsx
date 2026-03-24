@@ -121,7 +121,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
         isDark ? 'border-slate-800' : 'border-slate-200'
       )}
     >
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-visible relative">
         <table className="w-full">
           <thead>
             <tr
@@ -234,7 +234,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
                   </td>
 
                   {/* Actions */}
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right relative">
                     <DocumentActionsMenu
                       document={doc}
                       isDark={isDark}

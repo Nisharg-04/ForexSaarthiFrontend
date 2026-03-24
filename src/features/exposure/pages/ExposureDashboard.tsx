@@ -12,7 +12,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   TrendingUp,
   AlertTriangle,
@@ -43,7 +43,6 @@ import { NaturalHedgeModal } from '../modals/NaturalHedgeModal';
 import { CloseHedgeModal } from '../modals/CloseHedgeModal';
 import { QuarterlyHedgingDashboardSection } from '../components/QuarterlyHedgingDashboardSection';
 import { QuarterlyNaturalHedgeModal } from '../modals/QuarterlyNaturalHedgeModal';
-import { BookForwardContractModal } from '../modals/BookForwardContractModal';
 import { useExposurePermissions } from '../hooks/useExposurePermissions';
 import type { Exposure, ExposureListItem, ExposureByCurrency, ExposureByType } from '../types';
 import { formatCurrency } from '../exposureUtils';
@@ -99,6 +98,7 @@ const filterForRiskView = (items: ExposureListItem[]): ExposureListItem[] => {
 };
 
 export const ExposureDashboard: React.FC<ExposureDashboardProps> = ({ isDark: propIsDark }) => {
+  const navigate = useNavigate();
   const theme = useAppSelector((state) => state.ui?.theme);
   const isDark = propIsDark ?? theme === 'dark';
   
@@ -117,9 +117,6 @@ export const ExposureDashboard: React.FC<ExposureDashboardProps> = ({ isDark: pr
   
   // Quarterly hedging modals
   const [quarterlyNaturalHedgeModal, setQuarterlyNaturalHedgeModal] = useState<{ open: boolean; quarter?: string; currency?: string }>({
-    open: false,
-  });
-  const [bookForwardModal, setBookForwardModal] = useState<{ open: boolean; exposureId?: string }>({
     open: false,
   });
   
@@ -494,7 +491,7 @@ export const ExposureDashboard: React.FC<ExposureDashboardProps> = ({ isDark: pr
           <QuarterlyHedgingDashboardSection
             isDark={isDark}
             onApplyNaturalHedge={(quarter, currency) => setQuarterlyNaturalHedgeModal({ open: true, quarter, currency })}
-            onBookForward={() => setBookForwardModal({ open: true })}
+            onBookForward={() => navigate('/dashboard/exposures/hedges')}
           />
         </div>
 
@@ -629,12 +626,6 @@ export const ExposureDashboard: React.FC<ExposureDashboardProps> = ({ isDark: pr
           preselectedCurrency={quarterlyNaturalHedgeModal.currency}
         />
 
-        <BookForwardContractModal
-          isOpen={bookForwardModal.open}
-          onClose={() => setBookForwardModal({ open: false })}
-          isDark={isDark}
-          exposure={null}
-        />
       </div>
     </div>
   );
