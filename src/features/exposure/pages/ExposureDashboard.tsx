@@ -213,6 +213,104 @@ export const ExposureDashboard: React.FC<ExposureDashboardProps> = ({ isDark: pr
     setCloseHedgeModal({ open: true, exposure });
   };
 
+  const handleExportDashboard = useCallback(() => {
+    if (!dashboardData?.data) return;
+
+    const escapeCsv = (value: string | number | undefined | null) => {
+      const text = value == null ? '' : String(value);
+      if (/[",\n]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+    };
+
+    const rows: Array<Array<string | number | undefined | null>> = [];
+
+    rows.push(['Exposure Dashboard Export']);
+    rows.push(['Generated At', dashboardData.data.generatedAt || new Date().toISOString()]);
+    rows.push([]);
+
+    rows.push(['Summary']);
+    rows.push(['Metric', 'Value']);
+    rows.push(['Total Active Exposures', totals?.totalCount || 0]);
+    rows.push(['Fully Hedged Count', totals?.fullyHedgedCount || 0]);
+    rows.push(['Partially Hedged Count', totals?.partiallyHedgedCount || 0]);
+    rows.push(['Unhedged Count', totals?.unhedgedCount || 0]);
+    rows.push(['Settled Count', totals?.settledCount || 0]);
+    rows.push(['Overall Hedge Percentage', totals?.overallHedgePercentage || 0]);
+    rows.push(['Total Open FX Risk (Base)', totals?.totalUnhedgedValueInBaseCurrency || calculatedUnhedgedValue || 0]);
+    rows.push([]);
+
+    rows.push(['Currency Breakdown']);
+    rows.push([
+      'Currency',
+      'Count',
+      'Total Exposed Amount',
+      'Total Hedged Amount',
+      'Total Unhedged Amount',
+      'Current Rate',
+      'Value In Base Currency',
+      'Net Position',
+      'Hedge Percentage',
+    ]);
+    byCurrencyData.forEach((currency) => {
+      rows.push([
+        currency.currency,
+        currency.count,
+        currency.totalExposedAmount,
+        currency.totalHedgedAmount,
+        currency.totalUnhedgedAmount,
+        currency.currentRate,
+        currency.valueInBaseCurrency,
+        currency.netPosition,
+        currency.hedgePercentage,
+      ]);
+    });
+    rows.push([]);
+
+    rows.push(['Maturing Soon (Current View)']);
+    rows.push(['Invoice', 'Trade', 'Party', 'Currency', 'Unhedged Amount', 'Days To Maturity', 'Status']);
+    maturingSoon.forEach((item) => {
+      rows.push([
+        item.invoiceNumber,
+        item.tradeNumber,
+        item.partyName,
+        item.currency,
+        item.unhedgedAmount,
+        item.daysToMaturity,
+        item.status,
+      ]);
+    });
+    rows.push([]);
+
+    rows.push(['Overdue (Current View)']);
+    rows.push(['Invoice', 'Trade', 'Party', 'Currency', 'Unhedged Amount', 'Days To Maturity', 'Status']);
+    overdue.forEach((item) => {
+      rows.push([
+        item.invoiceNumber,
+        item.tradeNumber,
+        item.partyName,
+        item.currency,
+        item.unhedgedAmount,
+        item.daysToMaturity,
+        item.status,
+      ]);
+    });
+
+    const csv = rows.map((row) => row.map((cell) => escapeCsv(cell)).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+
+    link.href = url;
+    link.download = `exposure-dashboard-${date}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [dashboardData, totals, calculatedUnhedgedValue, byCurrencyData, maturingSoon, overdue]);
+
   // Theme classes (Dark Navy + Emerald Green theme)
   const bgClass = isDark ? 'bg-slate-900' : 'bg-slate-50';
   const cardBgClass = isDark ? 'bg-slate-800' : 'bg-white';
@@ -286,13 +384,16 @@ export const ExposureDashboard: React.FC<ExposureDashboardProps> = ({ isDark: pr
               {isDashboardFetching ? 'Refreshing...' : 'Refresh'}
             </button>
             <button
+              onClick={handleExportDashboard}
+              disabled={!dashboardData?.data}
               className={cn(
                 'inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium',
                 'transition-all border',
                 borderClass,
                 isDark 
                   ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' 
-                  : 'bg-white text-slate-700 hover:bg-slate-50'
+                  : 'bg-white text-slate-700 hover:bg-slate-50',
+                'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-inherit'
               )}
             >
               <Download className="h-4 w-4" />

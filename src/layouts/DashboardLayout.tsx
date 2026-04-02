@@ -86,6 +86,12 @@ export const DashboardLayout: React.FC = () => {
       )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Outlet />
+          <footer className={cn(
+            'mt-10 border-t pt-4 text-center text-sm',
+            isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-500'
+          )}>
+            © 2026 ForexSaarthi. All rights reserved.
+          </footer>
         </div>
       </main>
 

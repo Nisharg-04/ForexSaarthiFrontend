@@ -1,5 +1,6 @@
 import { Navbar } from '../components/ui/Navbar';
 import { Target, Eye, TrendingUp, Users } from 'lucide-react';
+import { PublicBigLogoFooter } from '../components/ui/PublicBigLogoFooter';
 
 export const About = () => {
   return (
@@ -223,12 +224,7 @@ export const About = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-900 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto text-center text-gray-400">
-          <p>&copy; 2026 ForexSaarthi. All rights reserved.</p>
-        </div>
-      </footer>
+      <PublicBigLogoFooter />
     </div>
   );
 };

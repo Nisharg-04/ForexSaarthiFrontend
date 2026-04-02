@@ -5,6 +5,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   Calendar,
   Download,
@@ -22,7 +24,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../../utils/helpers';
 import { useAppSelector } from '../../../hooks/useRedux';
-import { useGetQuarterlyReportQuery, useLazyGetQuarterlyReportQuery } from '../api/hedgingApi';
+import { useGetQuarterlyReportQuery } from '../api/hedgingApi';
 import {
   getUpcomingQuarters,
   getCurrentQuarter,
@@ -50,6 +52,12 @@ interface QuarterlyReportViewProps {
 
 // Available currencies
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'SGD'];
+
+interface JsPdfWithAutoTable extends jsPDF {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────────
 // COMPONENT
@@ -86,7 +94,91 @@ export const QuarterlyReportView: React.FC<QuarterlyReportViewProps> = ({
 
   const report = reportData?.data;
   const summary = report?.summary;
-console.log(reportData)
+
+  const handleExportPdf = useCallback(() => {
+    if (!report) return;
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' }) as JsPdfWithAutoTable;
+    const generatedDate = new Date().toISOString().slice(0, 10);
+    const safeQuarter = selectedQuarter.replace(/[^a-zA-Z0-9-]/g, '_');
+    const safeCurrency = selectedCurrency.replace(/[^a-zA-Z0-9-]/g, '_');
+
+    doc.setFontSize(16);
+    doc.text('Quarterly Exposure Report', 14, 14);
+    doc.setFontSize(10);
+    doc.text(`Quarter: ${selectedQuarter}`, 14, 21);
+    doc.text(`Currency: ${selectedCurrency}`, 14, 27);
+    doc.text(`Generated: ${generatedDate}`, 14, 33);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Total Receivables', String(summary?.totalReceivables ?? 0)],
+        ['Total Payables', String(summary?.totalPayables ?? 0)],
+        ['Net Position', String(summary?.netPosition ?? 0)],
+        ['Natural Hedged', String(summary?.naturallyHedged ?? 0)],
+        ['Forward Hedged', String(summary?.forwardHedged ?? 0)],
+        ['Total Hedged', String(summary?.totalHedged ?? 0)],
+        ['Net Exposure At Risk', String(summary?.netExposureAtRisk ?? 0)],
+        ['Hedge Percentage', `${summary?.hedgePercentage ?? 0}%`],
+      ],
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [15, 23, 42] },
+    });
+
+    const reportRows = [
+      ...(report.naturalHedges || []).map((hedge) => [
+        'NATURAL',
+        hedge.receivableInvoiceNumber ?? hedge.receivableExposure?.invoiceNumber ?? '-',
+        hedge.payableInvoiceNumber ?? hedge.payableExposure?.invoiceNumber ?? '-',
+        hedge.currency,
+        String(hedge.hedgeAmount ?? 0),
+        String(hedge.hedgeRate ?? hedge.rate ?? 0),
+        hedge.status,
+      ]),
+      ...(report.forwardContracts || []).map((contract) => [
+        'FORWARD',
+        contract.contractNumber ?? '-',
+        contract.bankName ?? '-',
+        contract.currency,
+        String(contract.hedgeAmount ?? 0),
+        String(contract.rate ?? 0),
+        contract.status,
+      ]),
+    ];
+
+    if (reportRows.length > 0) {
+      autoTable(doc, {
+        startY: (doc.lastAutoTable?.finalY || 40) + 8,
+        head: [['Type', 'Ref 1', 'Ref 2', 'Currency', 'Amount', 'Rate', 'Status']],
+        body: reportRows,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [30, 64, 175] },
+      });
+    }
+
+    const unhedgedRows = (report.unhedgedExposures || []).map((exp) => [
+      exp.invoiceNumber,
+      exp.partyName,
+      exp.type,
+      exp.currency,
+      String(exp.unhedgedAmount),
+      exp.maturityDate,
+    ]);
+
+    if (unhedgedRows.length > 0) {
+      autoTable(doc, {
+        startY: (doc.lastAutoTable?.finalY || 40) + 8,
+        head: [['Invoice', 'Party', 'Type', 'Currency', 'Unhedged Amount', 'Maturity']],
+        body: unhedgedRows,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [180, 83, 9] },
+      });
+    }
+
+    doc.save(`quarterly-report-${safeQuarter}-${safeCurrency}-${generatedDate}.pdf`);
+  }, [report, selectedQuarter, selectedCurrency, summary]);
 
   // Calculate totals from exposure arrays as fallback when summary values are missing/zero
   const calculatedTotals = useMemo(() => {
@@ -194,11 +286,14 @@ console.log(reportData)
               </button>
 
               <button
+                onClick={handleExportPdf}
+                disabled={!report || isLoading}
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   isDark
                     ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200',
+                  (!report || isLoading) && 'opacity-50 cursor-not-allowed hover:bg-inherit'
                 )}
               >
                 <Download className="w-4 h-4" />

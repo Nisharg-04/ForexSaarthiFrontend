@@ -119,6 +119,67 @@ export const HedgeManagementPage: React.FC<HedgeManagementPageProps> = ({ isDark
     refetch();
   }, [refetch]);
 
+  const handleExport = useCallback(() => {
+    if (!filteredHedges.length) return;
+
+    const escapeCsvValue = (value: string | number | undefined | null) => {
+      const stringValue = value == null ? '' : String(value);
+      if (/[",\n]/.test(stringValue)) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    };
+
+    const headers = [
+      'Hedge ID',
+      'Type',
+      'Status',
+      'Quarter',
+      'Currency',
+      'Hedge Amount',
+      'Rate',
+      'Contract Number',
+      'Bank Name',
+      'Receivable Invoice',
+      'Payable Invoice',
+      'Created At',
+    ];
+
+    const rows = filteredHedges.map((hedge) => [
+      hedge.id,
+      hedge.type,
+      hedge.status,
+      hedge.quarter,
+      hedge.currency,
+      hedge.hedgeAmount,
+      hedge.hedgeRate ?? hedge.rate,
+      hedge.contractNumber,
+      hedge.bankName,
+      hedge.receivableInvoiceNumber ?? hedge.receivableExposure?.invoiceNumber,
+      hedge.payableInvoiceNumber ?? hedge.payableExposure?.invoiceNumber,
+      hedge.createdAt,
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map((value) => escapeCsvValue(value)).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const quarterSegment = selectedQuarter || 'all-quarters';
+    const typeSegment = selectedType || 'all-types';
+    const statusSegment = selectedStatus || 'all-statuses';
+    a.download = `hedges-${quarterSegment}-${typeSegment}-${statusSegment}.csv`;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [filteredHedges, selectedQuarter, selectedType, selectedStatus]);
+
   // Theme classes
   const bgClass = isDark ? 'bg-slate-900' : 'bg-slate-50';
   const cardBgClass = isDark ? 'bg-slate-800' : 'bg-white';
@@ -285,11 +346,14 @@ export const HedgeManagementPage: React.FC<HedgeManagementPageProps> = ({ isDark
 
           {/* Export Button */}
           <button
+            onClick={handleExport}
+            disabled={!filteredHedges.length}
             className={cn(
               'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
               isDark
                 ? 'text-slate-400 hover:text-white hover:bg-slate-700'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100',
+              !filteredHedges.length && 'opacity-50 cursor-not-allowed hover:bg-transparent'
             )}
           >
             <Download className="w-4 h-4" />

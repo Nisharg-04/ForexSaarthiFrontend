@@ -2,6 +2,7 @@ import { Navbar } from '../components/ui/Navbar';
 import { Mail, MessageSquare, Phone, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { PublicBigLogoFooter } from '../components/ui/PublicBigLogoFooter';
 
 export const Contact = () => {
   const [formData, setFormData] = useState({
@@ -85,7 +86,7 @@ export const Contact = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Phone</p>
-                    <p className="text-lg text-gray-900 dark:text-white">+91 (XXX) XXX-XXXX</p>
+                    <p className="text-lg text-gray-900 dark:text-white">+91 8320522371</p>
                   </div>
                 </div>
 
@@ -95,7 +96,7 @@ export const Contact = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Office</p>
-                    <p className="text-lg text-gray-900 dark:text-white">Mumbai, India</p>
+                    <p className="text-lg text-gray-900 dark:text-white">Rajkot, India</p>
                   </div>
                 </div>
 
@@ -281,12 +282,7 @@ export const Contact = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-900 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto text-center text-gray-400">
-          <p>&copy; 2026 ForexSaarthi. All rights reserved.</p>
-        </div>
-      </footer>
+      <PublicBigLogoFooter />
     </div>
   );
 };

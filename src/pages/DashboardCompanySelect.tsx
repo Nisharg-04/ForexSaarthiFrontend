@@ -28,7 +28,7 @@ export const DashboardCompanySelect: React.FC = () => {
       <footer className={`border-t py-4 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className={`text-center text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-            © {new Date().getFullYear()} ForexSaarthi. All rights reserved.
+            © 2026 All rights reserved.
           </p>
         </div>
       </footer>

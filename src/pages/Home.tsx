@@ -8,6 +8,7 @@ import {
   BarChart3, FileText, CreditCard, PiggyBank,Sparkles,Play
 } from 'lucide-react';
 import HeroSection from '../components/ui/HeroSection';
+import { PublicBigLogoFooter } from '../components/ui/PublicBigLogoFooter';
 
 // Hook for scroll-based reveal animations
 const useScrollReveal = () => {
@@ -551,14 +552,25 @@ export const Home = () => {
             Start managing your forex exposure, shipments, and settlements with confidence today.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
-            <button className="group px-10 py-5 text-lg font-bold text-slate-900 bg-white hover:bg-gray-100 rounded-xl transition-all duration-300 shadow-2xl hover:shadow-white/20 hover:scale-105 flex items-center space-x-3">
-              <span>Start Free Trial</span>
-              <ArrowRightLeft className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
-            </button>
-            <button className="px-10 py-5 text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/50 hover:scale-105">
-              Schedule Demo
-            </button>
+          <div className="mb-16 mx-auto max-w-4xl">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { label: 'No setup fees', value: 'Start immediately', icon: Sparkles },
+                { label: 'Fast onboarding', value: 'Get live in under 30 min', icon: Clock },
+                { label: 'Dedicated guidance', value: 'Support from trade experts', icon: Users },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-white/15 bg-white/10 backdrop-blur-md px-5 py-4 text-left"
+                >
+                  <div className="flex items-center gap-2 text-cyan-300 mb-1">
+                    <item.icon className="w-4 h-4" />
+                    <span className="text-xs uppercase tracking-wide font-semibold">{item.label}</span>
+                  </div>
+                  <p className="text-white font-medium">{item.value}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Trust Badges */}
@@ -578,71 +590,7 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-950 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            {/* Company Info */}
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-3 mb-4">
-                <Globe className="w-8 h-8 text-blue-500" />
-                <span className="text-2xl font-bold text-white">ForexSaarthi</span>
-              </div>
-              <p className="text-gray-400 mb-6 leading-relaxed">
-                AI-powered forex and trade management platform for import-export businesses worldwide.
-              </p>
-              <div className="flex space-x-4">
-                {['twitter', 'linkedin', 'facebook', 'instagram'].map((social) => (
-                  <button
-                    key={social}
-                    className="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors"
-                  >
-                    <span className="sr-only">{social}</span>
-                    <div className="w-5 h-5 bg-gray-400 rounded-full" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h3 className="text-white font-semibold mb-4">Product</h3>
-              <ul className="space-y-3">
-                {['Features', 'Pricing', 'Demo', 'Updates'].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h3 className="text-white font-semibold mb-4">Company</h3>
-              <ul className="space-y-3">
-                {['About', 'Blog', 'Careers', 'Contact'].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">&copy; 2026 ForexSaarthi. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Terms</a>
-              <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Cookies</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicBigLogoFooter />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { ArrowRight, Play, Ship, Plane } from 'lucide-react';
+import { ArrowRight, Ship, Plane } from 'lucide-react';
 
 export const HeroSection = () => {
   return (
@@ -59,15 +59,14 @@ export const HeroSection = () => {
             ForexSaarthi gives importers and exporters clear visibility and faster decisions.
           </p>
 
-          <div className="mt-10 flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-            <button className="group inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-teal-500">
+          <div className="mt-10 flex w-full justify-center">
+            <a
+              href="/register"
+              className="group inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-teal-500"
+            >
               Start Free Trial
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </button>
-            <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white/15">
-              <Play className="h-4 w-4" />
-              Watch Platform Walkthrough
-            </button>
+            </a>
           </div>
         </div>
       </div>
